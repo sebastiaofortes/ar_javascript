@@ -1,0 +1,59 @@
+<!-- Inclua A-Frame e o jsQR -->
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+<style>
+  body, html { margin: 0; padding: 0; overflow: hidden; }
+  #video {
+    position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: 1;
+  }
+  a-scene {
+    position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 2;
+  }
+</style>
+
+<body>
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="canvas" hidden></canvas>
+
+<a-scene embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+  <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: 100; objects: .clickable"></a-camera>
+  <a-plane id="planeblue" color="blue" opacity="0.5" position="0 1.5 -3" height="0.552" width="1" rotation="0 0 0" visible="false" class="clickable">
+    <a-entity id="qrText" text="value: Aguarde o QR; color: #000;"></a-entity>
+  </a-plane>
+
+</a-scene>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const qrText = document.querySelector('#qrText');
+
+    planeblue.addEventListener("click", event => {
+      alert("Click event detected!");
+    });
+
+    navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}})
+      .then(function(stream) {
+        video.srcObject = stream;
+        video.setAttribute("playsinline", true);
+        video.play();
+        requestAnimationFrame(tick);
+      });
+
+    function tick() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, canvas.width, canvas.height);
+        if (code) {
+          qrText.setAttribute('text', 'value', code.data);
+          planeblue.setAttribute('visible', true);
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+  </script>
+</body>
