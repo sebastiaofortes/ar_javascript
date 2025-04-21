@@ -17,7 +17,7 @@
 
 <a-scene embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
   <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: 100; objects: .clickable"></a-camera>
-  <a-plane id="planeblue" color="blue" opacity="0.5" position="0 1.5 -3" height="0.552" width="1" rotation="0 0 0" visible="false" class="clickable">
+  <a-plane id="planeblue" color="blue" opacity="0.7" position="0 1.5 -3" height="0.552" width="1" rotation="0 0 0" visible="false" class="clickable">
     <a-entity id="qrText" text="value: Aguarde o QR; color: #000;"></a-entity>
   </a-plane>
 
@@ -41,19 +41,51 @@
         requestAnimationFrame(tick);
       });
 
-    function tick() {
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, canvas.width, canvas.height);
-        if (code) {
-          qrText.setAttribute('text', 'value', code.data);
-          planeblue.setAttribute('visible', true);
-        }
+    function qrCenter(location) {
+    const x = (
+      location.topLeftCorner.x +
+      location.topRightCorner.x +
+      location.bottomLeftCorner.x +
+      location.bottomRightCorner.x
+    ) / 4;
+    const y = (
+      location.topLeftCorner.y +
+      location.topRightCorner.y +
+      location.bottomLeftCorner.y +
+      location.bottomRightCorner.y
+    ) / 4;
+    return {x, y};
+  }
+
+    function getWorldPositionFromImage(x_px, y_px, videoWidth, videoHeight, z_dist = -3) {
+    const fov = 60 * Math.PI/180;            
+    const worldScreenHeight = 2 * Math.abs(z_dist) * Math.tan(fov/2);
+    const worldScreenWidth = (videoWidth/videoHeight) * worldScreenHeight;
+    const normX = (x_px / videoWidth) - 0.5;
+    const normY = 0.5 - (y_px / videoHeight);
+    const x = normX * worldScreenWidth;
+    const y = normY * worldScreenHeight;
+    return [x, y, z_dist];
+  }
+    
+  function tick() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, canvas.width, canvas.height);
+      if (code) {
+        qrText.setAttribute('text', 'value', code.data);
+        const center = qrCenter(code.location);
+        const position = getWorldPositionFromImage(
+          center.x, center.y, canvas.width, canvas.height, -3
+        );
+        planeblue.setAttribute('position', position.join(' '));
+        planeblue.setAttribute('visible', true);
       }
-      requestAnimationFrame(tick);
     }
+    requestAnimationFrame(tick);
+  }
   </script>
 </body>
