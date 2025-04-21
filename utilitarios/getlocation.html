@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Minha localização em tempo real</h1>
+    <h2 id="latit">Buscando localização...</h2>
+    <h2 id="longit">Buscando localização...</h2>
+
+    <script>
+      if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(function(position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          document.getElementById("latit").textContent = 
+            `Latitude: ${lat}`;
+          document.getElementById("longit").textContent = 
+            `Longitude: ${lon}`;
+        });
+        
+      } else {
+        document.getElementById("localizacao").textContent = 
+          "Geolocalização não suportada.";
+      }
+    </script>
+  </body>
+</html>
