@@ -16,8 +16,8 @@ window.onload = () => {
     let boxAdded = false;
     let textEntity = null;
 
-    const targetLat = -23.561684;  // Substitua por sua latitude
-    const targetLon = -46.625378;  // Substitua por sua longitude
+    const targetLat = -17.3675704;  // Substitua por sua latitude
+    const targetLon = -44.9666925;  // Substitua por sua longitude
     const tolerance = 0.0001; // Aproximadamente 10 metros
 
     const el = document.querySelector("[gps-new-camera]");
@@ -39,6 +39,8 @@ window.onload = () => {
         }
 
         const isNear = Math.abs(userLat - targetLat) < tolerance && Math.abs(userLon - targetLon) < tolerance;
+        alert("Latitude: ", userLat - targetLat)
+        alert("Longitude: ", userLon - targetLon)
 
         if (isNear && !textEntity) {
             alert('usuario dentro do quarto');
