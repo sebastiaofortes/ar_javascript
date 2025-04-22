@@ -42,7 +42,7 @@ window.onload = () => {
         const isNear = Math.abs(userLat - targetLat) < tolerance && Math.abs(userLon - targetLon) < tolerance;
 
         if (isNear && !textAdded) {
-            console.log('usuario perto do quarto')
+            alert('usuario perto do quarto')
             const text = document.createElement("a-text");
             text.setAttribute("value", "Você chegou ao destino!");
             text.setAttribute("look-at", "[gps-new-camera]"); // Opcional: texto sempre visível
