@@ -59,9 +59,11 @@ window.onload = () => {
 
         // Remover ao afastar
         if (!isNear && textEntity) {
-            alert('FORA DO QUARTO')
+            alert('!!!!!! Você se afastou')
             textEntity.parentNode.removeChild(textEntity);
             textEntity = null;
+        } else if(!isNear && !textEntity){
+            alert('FORA DO QUARTO')
         }
     });
 };
