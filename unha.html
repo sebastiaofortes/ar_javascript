@@ -15,7 +15,22 @@
   <video id="video" autoplay playsinline muted></video>
   <canvas id="canvas" hidden></canvas>
 
-<a-scene embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+<!-- Cena A-Frame configurada para suportar AR com WebXR -->
+<!-- webxr="optionalFeatures: hit-test;"  Ativa o recurso opcional 'hit-test' para detectar superfícies reais -->
+<!-- xr-mode="immersive-ar" Define que esta cena é para realidade aumentada (AR), não VR -->
+<!-- vr-mode-ui="enabled: false" Esconde o botão padrão de VR (porque vamos controlar isso manualmente) -->
+<!-- device-orientation-permission-ui="enabled: false" Desativa a interface automática que pede permissão para sensores -->
+<!-- renderer="colorManagement: true; physicallyCorrectLights: true;" Ativa renderização mais realista com correção de cor e luzes físicas -->
+<!-- embedded Faz com que a cena fique "embutida" na página, permitindo sobreposição ao vídeo da câmera -->
+<a-scene
+  webxr="optionalFeatures: hit-test;"
+  xr-mode="immersive-ar"
+  embedded vr-mode-ui="enabled: false" 
+  device-orientation-permission-ui="enabled: false"
+  renderer="colorManagement: true; physicallyCorrectLights: true;"
+  embedded
+  >
+
   <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: 100; objects: .clickable"></a-camera>
   <a-plane id="planeblue" color="blue" opacity="0.7" position="0 1.5 -3" height="0.552" width="1" rotation="0 0 0" visible="false" class="clickable">
     <a-entity id="qrText" text="value: Aguarde o QR; color: #000;"></a-entity>
