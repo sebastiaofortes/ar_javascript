@@ -12,6 +12,9 @@
     <a-assets>
         <a-asset-item id="avatarModel" src="scene.gltf"></a-asset-item>
     </a-assets>
+    <!-- ATENÇÃO Esse elemento vai desaparecer após a primeira detecção de localização -->
+    <!-- após a geolocalização ser ativada, a posição da câmera passa a ser controlada via GPS  -->
+    <!-- ou seja, a posição position="0 0 -2" deixa de fazer sentido prático, porque ela não é relativa à posição GPS real. -->
     <a-gltf-model position="0 0 -2"  rotation="0 15 0 "  src="#avatarModel"></a-gltf-model>
 </a-scene>
 <script>
