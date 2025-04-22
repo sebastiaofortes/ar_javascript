@@ -14,10 +14,10 @@
 <script>
 window.onload = () => {
     let boxAdded = false;
-    let textAdded = false;
+    let textEntity = null;
 
-    const targetLat = -17.3676279;  // Substitua por sua latitude
-    const targetLon = -44.9666853;  // Substitua por sua longitude
+    const targetLat = -23.561684;  // Substitua por sua latitude
+    const targetLon = -46.625378;  // Substitua por sua longitude
     const tolerance = 0.0001; // Aproximadamente 10 metros
 
     const el = document.querySelector("[gps-new-camera]");
@@ -38,21 +38,25 @@ window.onload = () => {
             boxAdded = true;
         }
 
-        // Verifica se o usuário está perto do local alvo
         const isNear = Math.abs(userLat - targetLat) < tolerance && Math.abs(userLon - targetLon) < tolerance;
 
-        if (isNear && !textAdded) {
-            alert('usuario perto do quarto')
-            const text = document.createElement("a-text");
-            text.setAttribute("value", "Você chegou ao destino!");
-            text.setAttribute("look-at", "[gps-new-camera]"); // Opcional: texto sempre visível
-            text.setAttribute("scale", "20 20 20");
-            text.setAttribute("gps-new-entity-place", {
+        if (isNear && !textEntity) {
+            alert('usuario dentro do quarto');
+            textEntity = document.createElement("a-text");
+            textEntity.setAttribute("value", "Você chegou ao destino!");
+            textEntity.setAttribute("look-at", "[gps-new-camera]");
+            textEntity.setAttribute("scale", "20 20 20");
+            textEntity.setAttribute("gps-new-entity-place", {
                 latitude: targetLat,
                 longitude: targetLon
             });
-            document.querySelector("a-scene").appendChild(text);
-            textAdded = true;
+            document.querySelector("a-scene").appendChild(textEntity);
+        }
+
+        if (!isNear && textEntity) {
+            alert('FORA DO QUARTO')
+            textEntity.parentNode.removeChild(textEntity);
+            textEntity = null;
         }
     });
 };
