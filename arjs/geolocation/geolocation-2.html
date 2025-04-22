@@ -53,6 +53,7 @@ window.onload = () => {
             document.querySelector("a-scene").appendChild(textEntity);
         }
 
+        // Remover ao afastar
         if (!isNear && textEntity) {
             alert('FORA DO QUARTO')
             textEntity.parentNode.removeChild(textEntity);
