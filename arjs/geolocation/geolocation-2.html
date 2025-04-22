@@ -39,8 +39,10 @@ window.onload = () => {
         }
 
         const isNear = Math.abs(userLat - targetLat) < tolerance && Math.abs(userLon - targetLon) < tolerance;
-        alert("Latitude: ", userLat - targetLat)
-        alert("Longitude: ", userLon - targetLon)
+        const valLat = userLat - targetLat
+        const valLong = userLon - targetLon
+        alert("Latitude: ", valLat)
+        alert("Longitude: ", valLong)
 
         if (isNear && !textEntity) {
             alert('usuario dentro do quarto');
