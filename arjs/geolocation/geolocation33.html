@@ -43,8 +43,8 @@ window.onload = () => {
             model.setAttribute("src", "scene.gltf");
             model.setAttribute("scale", "5 5 5");
             model.setAttribute("gps-new-entity-place", {
-                latitude: e.detail.position.latitude + 0.001,
-                longitude: e.detail.position.longitude
+                latitude: e.detail.position.latitude + 0.0005,
+                longitude: e.detail.position.longitude + 0.0002
             });
             document.querySelector("a-scene").appendChild(model);
         }
