@@ -12,7 +12,7 @@
     <a-assets>
         <a-asset-item id="avatarModel" src="scene.gltf"></a-asset-item>
     </a-assets>
-    <a-gltf-model position="0 0 -2"  rotation="0 -30 0 "  src="#avatarModel">
+    <a-gltf-model position="0 0 -2"  rotation="0 -30 0 "  src="#avatarModel"></a-gltf-model>
 </a-scene>
 <script>
 
@@ -44,7 +44,7 @@ window.onload = () => {
             model.setAttribute("scale", "5 5 5");
             model.setAttribute("gps-new-entity-place", {
                 latitude: e.detail.position.latitude + 0.001,
-                longitude: e.detail.position.longitude + 0.001
+                longitude: e.detail.position.longitude
             });
             document.querySelector("a-scene").appendChild(model);
         }
