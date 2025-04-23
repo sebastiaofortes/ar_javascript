@@ -33,7 +33,8 @@
             el.addEventListener("gps-camera-update-position", e => {
                 if (!testEntityAdded) {
 
-    
+                    // Para serem clicáveis os objetos precisam estar a uma distãncia menor que 0,001
+                    // Isso ocorre devido a minha configuração de raycaster 
                     GenerateCubes(e, -0.0007, -0.0007, 'Box1N', 'yellow'); //atrás esquerdo
                     GenerateCubes(e, -0.0007, 0, 'Box2N', 'blue'); // atrás
                     GenerateCubes(e, -0.0007, 0.0007, 'Box3N', 'black'); //atrás direito
