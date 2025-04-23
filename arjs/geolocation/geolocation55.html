@@ -47,6 +47,8 @@ window.onload = () => {
             entity.setAttribute('opacity','0.5')
             document.querySelector("a-scene").appendChild(entity);
 
+            AddCube(e, 0.003);
+
             // Modelo GLTF
             const model = document.createElement("a-gltf-model");
             model.setAttribute("src", "scene.gltf");
@@ -75,7 +77,7 @@ window.onload = () => {
             };
             plane.setAttribute('class', 'clickable');
             plane.addEventListener("click", () => {
-                const raio = 0.0001; // Aproximadamente ~20m
+                const raio = 0.00005; // Aproximadamente ~20m
                 const angulo = Math.random() * 2 * Math.PI; // Ângulo em radianos
 
                 // Cálculo das novas coordenadas (rotação em círculo)
@@ -96,6 +98,23 @@ window.onload = () => {
         testEntityAdded = true;
     });
 };
+
+function AddCube(e, position, color){
+             // Add a box to the north of the initial GPS position
+            const entity = document.createElement("a-box");
+            entity.setAttribute("scale", {
+                x: 20, 
+                y: 20,
+                z: 20
+            });
+            entity.setAttribute('material', { color: color } );
+            entity.setAttribute('gps-new-entity-place', {
+                latitude: e.detail.position.latitude + position,
+                longitude: e.detail.position.longitude
+            });
+            entity.setAttribute('opacity','0.5')
+            document.querySelector("a-scene").appendChild(entity);   
+}
 
 </script>
 </body>
