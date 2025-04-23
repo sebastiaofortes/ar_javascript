@@ -34,12 +34,13 @@
                 if (!testEntityAdded) {
 
                     GenerateCubes(e, -0.004, 0, 'Box0', 'red');
-                    GenerateCubes(e, -0.001, -0.0005, 'Box2N', 'yellow');
-                    GenerateCubes(e, -0.001, 0, 'Box1N', 'blue');
-                    GenerateCubes(e, 0.001, 0, 'Box1', 'red');
-                    GenerateCubes(e, 0, 0.001, 'Box1P', 'green');
-                    GenerateCubes(e, 0.004, 0, 'Box2', 'red');
-                    GenerateCubes(e, 0.008, 0, 'Box2', 'red');
+                    GenerateCubes(e, -0.001, -0.0005, 'Box1N', 'yellow'); //atrás
+                    GenerateCubes(e, -0.001, 0, 'Box2N', 'blue'); // atrás
+                    GenerateCubes(e, -0.001, 0.0005, 'Box3N', 'black'); //atrás
+                    GenerateCubes(e, 0.001, 0, 'Box4N', 'red'); //frente
+                    GenerateCubes(e, 0, 0.001, 'Box5N', 'green'); // lado
+                    GenerateCubes(e, 0.004, 0, 'Box6', 'red');
+                    GenerateCubes(e, 0.008, 0, 'Bo7', 'red');
 
                     // Modelo GLTF
                     const model = document.createElement("a-gltf-model");
