@@ -58,17 +58,20 @@
                     });
                     document.querySelector("a-scene").appendChild(model);
 
-                    GeneratePlane(e, -0.0012, 0.0002);
-                    GeneratePlane(e, -0.0006, 0.0002);
-                    GeneratePlane(e, -0.0003, 0.0002);
-                    GeneratePlane(e, 0.0001, 0.0002);
-                    GeneratePlane(e, 0.0004, 0.0001)
-                    GeneratePlane(e, 0.0005, 0.0002)
-                    GeneratePlane(e, 0.0006, 0.0003)
-                    GeneratePlane(e, 0.0007, 0.00001)
-                    GeneratePlane(e, 0.0011, 0.0008)
-                    GeneratePlane(e, -0.0011, 0.0008)
-                    GeneratePlane(e, 0.0011, +0.0008)
+                    GeneratePlane(e, -0.0012, 0.0002, 'a');
+                    GeneratePlane(e, -0.0006, 0.0002, 'b');
+                    GeneratePlane(e, -0.0003, 0.0002, 'c');
+                    GeneratePlane(e, 0.0001, 0.0002, 'd');
+                    GeneratePlane(e, 0.0004, 0.0001, 'e')
+                    GeneratePlane(e, 0.0005, 0.0002, 'f')
+                    GeneratePlane(e, 0.0006, 0.0003, 'g')
+                    GeneratePlane(e, 0.0007, 0.00001, 'h')
+                    GeneratePlane(e, 0.0011, 0.0008, 'i')
+                    GeneratePlane(e, -0.0011, 0.0008, 'j')
+                    GeneratePlane(e, 0.0011, +0.0008, 'k')
+                    GeneratePlane(e, -0.0012, 0.0002, 'LL');
+                    GeneratePlane(e, -0.0006, -0.0002, 'MM');
+                    GeneratePlane(e, -0.0003, -0.0002, 'JJ');
 
                     // Remove carregando...
                     document.getElementById('loadingStatus').setAttribute('visible', 'false');
@@ -78,9 +81,10 @@
             });
         };
 
-        function GeneratePlane(e, latVal, longVal) {
+        function GeneratePlane(e, latVal, longVal, idv) {
             // Plane
             const plane = document.createElement('a-plane');
+            plane.setAttribute('id', idv);
             plane.setAttribute('width', 8);
             plane.setAttribute('height', 6);
             plane.setAttribute("gps-new-entity-place", {
