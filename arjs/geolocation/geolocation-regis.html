@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AR.js A-Frame Location-based</title>
+<script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+<script type='text/javascript' src='https://raw.githack.com/AR-js-org/AR.js/3.4.5/three.js/build/ar-threex-location-only.js'></script>
+<script type='text/javascript' src='https://raw.githack.com/AR-js-org/AR.js/3.4.5/aframe/build/aframe-ar.js'></script>
+</head>
+<body>
+<a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false' renderer='antialias: true; alpha: true'>
+    <a-camera gps-new-camera='gpsMinDistance: 10'></a-camera>
+</a-scene>
+
+<script>
+
+// Supermercado BH: LATITUDE= -17.3787301 LONGITUDE= -44.9672247
+// Regis Bike: LATITUDE= -17.3657828 LONGITUDE= -44.9644341
+
+window.onload = () => {
+    let boxAdded = false;
+    let textEntity = null;
+
+    const targetLat = -17.3675704;  // Substitua por sua latitude
+    const targetLon = -44.9666925;  // Substitua por sua longitude
+    const tolerance = 0.0001; // Aproximadamente 10 metros
+
+    const el = document.querySelector("[gps-new-camera]");
+
+    el.addEventListener("gps-camera-update-position", e => {
+        const userLat = e.detail.position.latitude;
+        const userLon = e.detail.position.longitude;
+
+        if (!boxAdded) {
+            const entity = document.createElement("a-box");
+            entity.setAttribute("scale", { x: 20, y: 20, z: 20 });
+            entity.setAttribute('material', { color: 'red' });
+            entity.setAttribute('gps-new-entity-place', {
+                latitude: userLat + 0.001,
+                longitude: userLon
+            });
+            document.querySelector("a-scene").appendChild(entity);
+            boxAdded = true;
+        }
+
+        const isNear = Math.abs(userLat - targetLat) < tolerance && Math.abs(userLon - targetLon) < tolerance;
+        const valLat = userLat - targetLat
+        const valLong = userLon - targetLon
+        alert(`Latitude:  ${valLat}  targetLat:  ${targetLat}`)
+        alert(`Longitude: ${valLong}  targetLon  ${targetLon}`)
+
+        if (isNear && !textEntity) {
+            alert('usuario dentro do quarto');
+            textEntity = document.createElement("a-text");
+            textEntity.setAttribute("value", "Você chegou ao destino!");
+            textEntity.setAttribute("look-at", "[gps-new-camera]");
+            textEntity.setAttribute("scale", "20 20 20");
+            textEntity.setAttribute("gps-new-entity-place", {
+                latitude: targetLat,
+                longitude: targetLon
+            });
+            document.querySelector("a-scene").appendChild(textEntity);
+        }
+
+        // Remover ao afastar
+        if (!isNear && textEntity) {
+            alert('!!!!!! Você se afastou')
+            textEntity.parentNode.removeChild(textEntity);
+            textEntity = null;
+        } else if(!isNear && !textEntity){
+            alert('FORA DO QUARTO')
+        }
+    });
+};
+</script>
+</body>
+</html>
