@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AR.js A-Frame Location-based</title>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script type='text/javascript'
+        src='https://raw.githack.com/AR-js-org/AR.js/3.4.5/three.js/build/ar-threex-location-only.js'></script>
+    <script type='text/javascript'
+        src='https://raw.githack.com/AR-js-org/AR.js/3.4.5/aframe/build/aframe-ar.js'></script>
+</head>
+
+<body>
+    <a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false'
+        renderer='antialias: true; alpha: true'>
+        <a-camera gps-new-camera='gpsMinDistance: 10' cursor="rayOrigin: mouse"
+            raycaster="far: 100; objects: .clickable">
+            <a-entity id="loadingStatus" position="0 0 -1"
+                text="value: Carregando...; color: white; align: center; width: 2">
+            </a-entity>
+        </a-camera>
+        <a-assets>
+            <video id="meuVideo" autoplay loop="true" src="vv2.webm"></video>
+        </a-assets>
+    </a-scene>
+    <script>
+
+        // Para serem clicáveis os objetos precisam estar a uma distãncia menor que 0,001
+        // Isso ocorre devido a minha configuração de raycaster 
+        const positionConfigs = [
+            { lat: -0.0005, long: -0.0007, id: 'Box1N', color: 'yellow', descricao: 'Atrás à esquerda' },
+            { lat: -0.0007, long: 0, id: 'Box2N', color: 'blue', descricao: 'Atrás' },
+            { lat: -0.0005, long: 0.0007, id: 'Box3N', color: 'black', descricao: 'Atrás à direita' },
+            { lat: 0.0007, long: 0, id: 'Box4N', color: 'red', descricao: 'Frente' },
+            { lat: 0, long: 0.0007, id: 'Box5N', color: 'green', descricao: 'Lado direito' },
+            { lat: 0, long: -0.0007, id: 'Box6N', color: 'pink', descricao: 'Lado esquerdo' }
+        ];
+
+        window.onload = () => {
+            let testEntityAdded = false;
+
+            const el = document.querySelector("[gps-new-camera]");
+
+            el.addEventListener("gps-camera-update-position", e => {
+                if (!testEntityAdded) {
+
+                    // Desenha os cubos
+                    //positionConfigs.forEach(cfg => {
+                    //    GenerateCubes(e, cfg.lat, cfg.long, cfg.id, cfg.color, cfg.id);
+                    //});
+
+
+                    // Modelo GLTF
+                    const model = document.createElement("a-gltf-model");
+                    model.setAttribute("src", "scene.gltf");
+                    model.setAttribute("scale", "5 5 5");
+                    model.setAttribute("rotation", "0 -90 0")
+                    model.setAttribute("gps-new-entity-place", {
+                        latitude: e.detail.position.latitude + 0.0005,
+                        longitude: e.detail.position.longitude + 0.0002
+                    });
+                    document.querySelector("a-scene").appendChild(model);
+                    
+                    // Desenha os cubos
+                    positionConfigs.forEach(cfg => {
+                        GeneratePlane(e, cfg.lat, cfg.long, cfg.id);
+                    });
+
+                    /*
+                    GeneratePlane(e, -0.0012, 0.0002, 'a');
+                    GeneratePlane(e, -0.0006, 0.0002, 'b');
+                    GeneratePlane(e, -0.0003, 0.0002, 'c');
+                    GeneratePlane(e, 0.0001, 0.0002, 'd');
+                    GeneratePlane(e, 0.0004, 0.0001, 'e')
+                    GeneratePlane(e, 0.0005, 0.0002, 'f')
+                    GeneratePlane(e, 0.0006, 0.0003, 'g')
+                    GeneratePlane(e, 0.0007, 0.0001, 'h')
+                    GeneratePlane(e, 0.0011, 0.0008, 'i')
+                    GeneratePlane(e, -0.0011, 0.0008, 'j')
+                    GeneratePlane(e, 0.0011, +0.0008, 'k')
+                    GeneratePlane(e, -0.0012, 0.0002, 'LL');
+                    GeneratePlane(e, -0.0006, -0.0002, 'MM');
+                    GeneratePlane(e, -0.0003, -0.0002, 'JJ');
+                    */
+                    // Remove carregando...
+                    document.getElementById('loadingStatus').setAttribute('visible', 'false');
+                    //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
+                }
+                testEntityAdded = true;
+            });
+        };
+
+        function GenerateCubes(e, latVal, longVal, idv, colorv) {
+            // Add a box to the north of the initial GPS position
+            const entity = document.createElement("a-box");
+            entity.setAttribute("scale", {
+                x: 20,
+                y: 20,
+                z: 20
+            });
+            entity.setAttribute('id', idv);
+            entity.setAttribute('class', 'clickable');
+            entity.setAttribute('material', { color: colorv });
+            entity.setAttribute('gps-new-entity-place', {
+                latitude: e.detail.position.latitude + latVal,
+                longitude: e.detail.position.longitude + longVal
+            });
+            entity.addEventListener("click", () => {
+                alert(entity.id);
+            });
+            entity.setAttribute('opacity', '0.6')
+            document.querySelector("a-scene").appendChild(entity);
+
+
+        }
+
+        function GeneratePlane(e, latVal, longVal, idv) {
+            // Plane
+            const plane = document.createElement('a-plane');
+            plane.setAttribute('id', idv);
+            plane.setAttribute('width', 8);
+            plane.setAttribute('height', 6);
+            plane.setAttribute("gps-new-entity-place", {
+                latitude: e.detail.position.latitude + latVal,
+                longitude: e.detail.position.longitude + longVal
+            });
+            plane.setAttribute('material', 'src: #meuVideo');
+            plane.setAttribute('transparent', 'true');
+            plane.setAttribute('class', 'clickable');
+            plane.addEventListener("click", () => {
+                alert(plane.id);
+            });
+            document.querySelector("a-scene").appendChild(plane);
+        }
+
+    </script>
+</body>
+
+</html>
