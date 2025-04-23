@@ -32,8 +32,8 @@
             { lat: -0.0007, long: 0, id: 'Box2N', color: 'blue', descricao: 'Atrás' },
             { lat: -0.0007, long: 0.0007, id: 'Box3N', color: 'black', descricao: 'Atrás à direita' },
             { lat: 0.0007, long: 0, id: 'Box4N', color: 'red', descricao: 'Frente' },
-            { lat: 0, long: 0.0007, id: 'Box5N', color: 'green', descricao: 'Frente direita' },
-            { lat: 0, long: -0.0007, id: 'Box6N', color: 'pink', descricao: 'Frente esquerda' }
+            { lat: 0, long: 0.0007, id: 'Box5N', color: 'green', descricao: 'Lado direito' },
+            { lat: 0, long: -0.0007, id: 'Box6N', color: 'pink', descricao: 'Lado esquerdo' }
         ];
 
         window.onload = () => {
@@ -46,7 +46,7 @@
 
                     // Desenha os cubos
                     positionConfigs.forEach(cfg => {
-                        GenerateCubes(e, cfg.lat, cfg.long, cfg.id, cfg.color, cfg.descricao);
+                        GenerateCubes(e, cfg.lat, cfg.long, cfg.id, cfg.color, cfg.id);
                     });
 
 
