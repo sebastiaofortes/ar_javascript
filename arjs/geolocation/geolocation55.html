@@ -71,6 +71,15 @@ window.onload = () => {
             plane.setAttribute('class', 'clickable');
             plane.addEventListener("click", event => {
                 alert("Click event detected!");
+                // Nova posição aleatória para demonstrar
+                const novaLatitude = event.target.components['gps-new-entity-place'].attrValue.latitude + 0.0002;
+                const novaLongitude = event.target.components['gps-new-entity-place'].attrValue.longitude + 0.0002;
+
+                // Atualiza a posição GPS
+                plane.setAttribute("gps-new-entity-place", {
+                    latitude: novaLatitude,
+                    longitude: novaLongitude
+                });
             });
             document.querySelector("a-scene").appendChild(plane);
 
