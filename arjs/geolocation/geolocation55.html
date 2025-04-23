@@ -91,7 +91,7 @@
             plane.setAttribute('transparent', 'true');
             plane.setAttribute('class', 'clickable');
             plane.addEventListener("click", () => {
-                alert('Novos passaros!')
+                alert(plane.id);
             });
             document.querySelector("a-scene").appendChild(plane);
         }
