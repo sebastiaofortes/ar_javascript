@@ -8,7 +8,11 @@
 </head>
 <body>
 <a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false' renderer='antialias: true; alpha: true'>
-    <a-camera gps-new-camera='gpsMinDistance: 10'>
+    <a-camera 
+    gps-new-camera='gpsMinDistance: 10'
+    cursor="rayOrigin: mouse"
+    raycaster="objects: [clickable]"
+    >
         <a-entity
         id="loadingStatus" 
         position="0 0 -1" 
@@ -64,6 +68,7 @@ window.onload = () => {
             });
             plane.setAttribute('material', 'src: #meuVideo');
             plane.setAttribute('transparent','true');
+            plane.setAttribute('class', 'clickable');
             plane.addEventListener("click", event => {
                 alert("Click event detected!");
             });
