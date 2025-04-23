@@ -25,6 +25,17 @@
     </a-scene>
     <script>
 
+        // Para serem clicáveis os objetos precisam estar a uma distãncia menor que 0,001
+        // Isso ocorre devido a minha configuração de raycaster 
+        const positionConfigs = [
+            { lat: -0.0007, long: -0.0007, id: 'Box1N', color: 'yellow', descricao: 'Atrás à esquerda' },
+            { lat: -0.0007, long: 0, id: 'Box2N', color: 'blue', descricao: 'Atrás' },
+            { lat: -0.0007, long: 0.0007, id: 'Box3N', color: 'black', descricao: 'Atrás à direita' },
+            { lat: 0.0007, long: 0, id: 'Box4N', color: 'red', descricao: 'Frente' },
+            { lat: 0, long: 0.0007, id: 'Box5N', color: 'green', descricao: 'Frente direita' },
+            { lat: 0, long: -0.0007, id: 'Box6N', color: 'pink', descricao: 'Frente esquerda' }
+        ];
+
         window.onload = () => {
             let testEntityAdded = false;
 
@@ -33,15 +44,11 @@
             el.addEventListener("gps-camera-update-position", e => {
                 if (!testEntityAdded) {
 
-                    // Para serem clicáveis os objetos precisam estar a uma distãncia menor que 0,001
-                    // Isso ocorre devido a minha configuração de raycaster 
-                    GenerateCubes(e, -0.0007, -0.0007, 'Box1N', 'yellow'); //atrás esquerdo
-                    GenerateCubes(e, -0.0007, 0, 'Box2N', 'blue'); // atrás
-                    GenerateCubes(e, -0.0007, 0.0007, 'Box3N', 'black'); //atrás direito
-                    GenerateCubes(e, 0.0007, 0, 'Box4N', 'red'); //frente
-                    GenerateCubes(e, 0, 0.0007, 'Box5N', 'green'); // lado direito
-                    GenerateCubes(e, 0, -0.0007, 'Box6N', 'pink');  // lado esquerdo
-                    
+                    // Desenha os cubos
+                    positionConfigs.forEach(cfg => {
+                        GenerateCubes(e, cfg.lat, cfg.long, cfg.id, cfg.color, cfg.descricao);
+                    });
+
 
                     // Modelo GLTF
                     const model = document.createElement("a-gltf-model");
