@@ -33,14 +33,14 @@
             el.addEventListener("gps-camera-update-position", e => {
                 if (!testEntityAdded) {
 
-                    GenerateCubes(e, -0.004, 0, 'Box0', 'red');
-                    GenerateCubes(e, -0.001, -0.0005, 'Box1N', 'yellow'); //atrás
+    
+                    GenerateCubes(e, -0.001, -0.0005, 'Box1N', 'yellow'); //atrás esquerdo
                     GenerateCubes(e, -0.001, 0, 'Box2N', 'blue'); // atrás
-                    GenerateCubes(e, -0.001, 0.0005, 'Box3N', 'black'); //atrás
+                    GenerateCubes(e, -0.001, 0.0005, 'Box3N', 'black'); //atrás direito
                     GenerateCubes(e, 0.001, 0, 'Box4N', 'red'); //frente
-                    GenerateCubes(e, 0, 0.001, 'Box5N', 'green'); // lado
-                    GenerateCubes(e, 0.004, 0, 'Box6', 'red');
-                    GenerateCubes(e, 0.008, 0, 'Bo7', 'red');
+                    GenerateCubes(e, 0, 0.001, 'Box5N', 'green'); // lado direito
+                    GenerateCubes(e, 0, -0.001, 'Box5N', 'pink'); 
+                    
 
                     // Modelo GLTF
                     const model = document.createElement("a-gltf-model");
@@ -94,7 +94,7 @@
             entity.addEventListener("click", () => {
                 alert(entity.id);
             });
-            entity.setAttribute('opacity', '0.5')
+            entity.setAttribute('opacity', '0.6')
             document.querySelector("a-scene").appendChild(entity);
 
 
