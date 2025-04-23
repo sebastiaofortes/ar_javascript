@@ -51,6 +51,16 @@ window.onload = () => {
                 longitude: e.detail.position.longitude + 0.0002
             });
             document.querySelector("a-scene").appendChild(model);
+
+            // Imagem PNG
+            const img = document.createElement("a-image");
+            img.setAttribute("src", "logo.png");
+            img.setAttribute("scale", "10 10 1");
+            img.setAttribute("gps-new-entity-place", {
+            latitude: e.detail.position.latitude + 0.0001,
+            longitude: e.detail.position.longitude + 0.0001
+            });
+            document.querySelector("a-scene").appendChild(img);
         }
         testEntityAdded = true;
     });
