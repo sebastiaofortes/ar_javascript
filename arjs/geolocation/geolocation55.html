@@ -68,17 +68,23 @@ window.onload = () => {
             });
             plane.setAttribute('material', 'src: #meuVideo');
             plane.setAttribute('transparent','true');
+           // Salva posição inicial
+            const posInicial = {
+                latitude: e.detail.position.latitude + 0.0001,
+                longitude: e.detail.position.longitude + 0.0002
+            };
             plane.setAttribute('class', 'clickable');
-            plane.addEventListener("click", event => {
-                alert("Click event detected!");
-                // Nova posição aleatória para demonstrar
-                const novaLatitude = event.target.components['gps-new-entity-place'].attrValue.latitude + 0.0002;
-                const novaLongitude = event.target.components['gps-new-entity-place'].attrValue.longitude + 0.0002;
+            plane.addEventListener("click", () => {
+                const raio = 0.0001; // Aproximadamente ~20m
+                const angulo = Math.random() * 2 * Math.PI; // Ângulo em radianos
 
-                // Atualiza a posição GPS
+                // Cálculo das novas coordenadas (rotação em círculo)
+                const novaLat = posInicial.latitude + raio * Math.cos(angulo);
+                const novaLon = posInicial.longitude + raio * Math.sin(angulo);
+
                 plane.setAttribute("gps-new-entity-place", {
-                    latitude: novaLatitude,
-                    longitude: novaLongitude
+                    latitude: novaLat,
+                    longitude: novaLon
                 });
             });
             document.querySelector("a-scene").appendChild(plane);
