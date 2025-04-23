@@ -11,6 +11,7 @@
     <a-camera gps-new-camera='gpsMinDistance: 10'></a-camera>
     <a-assets>
         <a-asset-item id="avatarModel" src="scene.gltf"></a-asset-item>
+        <video id="meuVideo" autoplay loop="true" src="meu-gif-convertido.mp4"></video>
     </a-assets>
     <!-- ATENÇÃO Esse elemento vai desaparecer após a primeira detecção de localização -->
     <!-- após a geolocalização ser ativada, a posição da câmera passa a ser controlada via GPS  -->
@@ -61,6 +62,17 @@ window.onload = () => {
             longitude: e.detail.position.longitude + 0.0001
             });
             document.querySelector("a-scene").appendChild(img);
+
+            // Plane
+            const plane = document.createElement('a-plane');
+            plane.setAttribute('width', 2);
+            plane.setAttribute('height', 1.5);
+            plane.setAttribute("gps-new-entity-place", {
+            latitude: e.detail.position.latitude + 0.0001,
+            longitude: e.detail.position.longitude + 0.000
+            });
+            plane.setAttribute('material', 'src: #meuVideo');
+            document.querySelector("a-scene").appendChild(plane);
         }
         testEntityAdded = true;
     });
