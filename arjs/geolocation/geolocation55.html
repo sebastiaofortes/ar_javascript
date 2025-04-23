@@ -78,8 +78,17 @@ window.onload = () => {
             };
             plane.setAttribute('class', 'clickable');
             plane.addEventListener("click", () => {
-                const raio = 0.00005; // Aproximadamente ~20m
+                const raio = 0.00005; // Aproximadamente ~5m
                 const angulo = Math.random() * 2 * Math.PI; // Ângulo em radianos
+
+            const pos = el.components["gps-new-camera"].currentCoords;
+
+            if (!pos) {
+                console.warn("Posição da câmera ainda não disponível.");
+                return;
+            } else {
+                posInicial = pos
+            }
 
                 // Cálculo das novas coordenadas (rotação em círculo)
                 const novaLat = posInicial.latitude + raio * Math.cos(angulo);
