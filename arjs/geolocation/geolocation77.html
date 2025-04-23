@@ -61,7 +61,7 @@
                         longitude: e.detail.position.longitude + 0.0002
                     });
                     document.querySelector("a-scene").appendChild(model);
-                    
+
                     // Desenha os cubos
                     positionConfigs.forEach(cfg => {
                         GeneratePlane(e, cfg.lat, cfg.long, cfg.id);
@@ -122,7 +122,7 @@
             plane.setAttribute('width', 8);
             plane.setAttribute('height', 4);
             // faz com que o plano rotacione para sempre ficar virado para a câmera,
-            // necessário dependência <!-- <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script> -->
+            // necessário dependência <!-- <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
             plane.setAttribute('look-at', '[gps-new-camera]');
             plane.setAttribute("gps-new-entity-place", {
                 latitude: e.detail.position.latitude + latVal,
@@ -132,9 +132,19 @@
             plane.setAttribute('transparent', 'true');
             plane.setAttribute('class', 'clickable');
             plane.addEventListener("click", () => {
-                alert(plane.id);
+                const newPosition = getRandomPositionConfig(e);
+                plane.setAttribute('gps-new-entity-place', {
+                    latitude: e.detail.position.latitude + newPosition.lat,
+                    longitude: e.detail.position.longitude + newPosition.long
+                });
+                alert(`${idv} movido para: ${newPosition.descricao}`);
             });
             document.querySelector("a-scene").appendChild(plane);
+        }
+
+        function getRandomPositionConfig(e) {
+            const index = Math.floor(Math.random() * positionConfigs.length);
+            return positionConfigs[index];
         }
 
     </script>
