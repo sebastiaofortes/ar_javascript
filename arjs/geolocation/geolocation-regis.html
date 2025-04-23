@@ -49,7 +49,7 @@ window.onload = () => {
         alert(`Longitude: ${valLong}  targetLon  ${targetLon}`)
 
         if (isNear && !textEntity) {
-            alert('usuario dentro do quarto');
+            alert('usuario na loja de REGIS BKE');
             textEntity = document.createElement("a-text");
             textEntity.setAttribute("value", "Você chegou ao destino!");
             textEntity.setAttribute("look-at", "[gps-new-camera]");
@@ -67,7 +67,7 @@ window.onload = () => {
             textEntity.parentNode.removeChild(textEntity);
             textEntity = null;
         } else if(!isNear && !textEntity){
-            alert('FORA DO QUARTO')
+            alert('FORA DE REGIS')
         }
     });
 };
