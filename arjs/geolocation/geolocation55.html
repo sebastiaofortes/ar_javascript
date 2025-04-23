@@ -58,7 +58,8 @@
                     });
                     document.querySelector("a-scene").appendChild(model);
 
-                    GeneratePlane(e)
+                    GeneratePlane(e, 0.0001, 0.0002);
+                    GeneratePlane(e, 0.0001, 0.0006)
 
                     // Remove carregando...
                     document.getElementById('loadingStatus').setAttribute('visible', 'false');
@@ -68,25 +69,20 @@
             });
         };
 
-        function GeneratePlane(e) {
+        function GeneratePlane(e, latVal, longVal) {
             // Plane
             const plane = document.createElement('a-plane');
             plane.setAttribute('width', 8);
             plane.setAttribute('height', 6);
             plane.setAttribute("gps-new-entity-place", {
-                latitude: e.detail.position.latitude + 0.0001,
-                longitude: e.detail.position.longitude + 0.0002
+                latitude: e.detail.position.latitude + latVal,
+                longitude: e.detail.position.longitude + longVal
             });
             plane.setAttribute('material', 'src: #meuVideo');
             plane.setAttribute('transparent', 'true');
-            // Salva posição inicial
-            const posInicial = {
-                latitude: e.detail.position.latitude + 0.0001,
-                longitude: e.detail.position.longitude + 0.0002
-            };
             plane.setAttribute('class', 'clickable');
             plane.addEventListener("click", () => {
-                alert('JOGO INTERATIVO!')
+                alert('DOIS PASSAROS!')
             });
             document.querySelector("a-scene").appendChild(plane);
         }
