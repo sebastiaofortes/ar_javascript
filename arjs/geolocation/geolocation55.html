@@ -32,20 +32,11 @@
 
             el.addEventListener("gps-camera-update-position", e => {
                 if (!testEntityAdded) {
-                    // Add a box to the north of the initial GPS position
-                    const entity = document.createElement("a-box");
-                    entity.setAttribute("scale", {
-                        x: 20,
-                        y: 20,
-                        z: 20
-                    });
-                    entity.setAttribute('material', { color: 'red' });
-                    entity.setAttribute('gps-new-entity-place', {
-                        latitude: e.detail.position.latitude + 0.001,
-                        longitude: e.detail.position.longitude
-                    });
-                    entity.setAttribute('opacity', '0.5')
-                    document.querySelector("a-scene").appendChild(entity);
+
+                    GenerateCubes(e, -0.004, 0, 'Box0');
+                    GenerateCubes(e, 0.001, 0, 'Box1');
+                    GenerateCubes(e, 0.004, 0, 'Box2');
+                    GenerateCubes(e, 0.008, 0, 'Box2');
 
                     // Modelo GLTF
                     const model = document.createElement("a-gltf-model");
@@ -57,7 +48,7 @@
                         longitude: e.detail.position.longitude + 0.0002
                     });
                     document.querySelector("a-scene").appendChild(model);
-
+                    /*
                     GeneratePlane(e, -0.0012, 0.0002, 'a');
                     GeneratePlane(e, -0.0006, 0.0002, 'b');
                     GeneratePlane(e, -0.0003, 0.0002, 'c');
@@ -72,7 +63,7 @@
                     GeneratePlane(e, -0.0012, 0.0002, 'LL');
                     GeneratePlane(e, -0.0006, -0.0002, 'MM');
                     GeneratePlane(e, -0.0003, -0.0002, 'JJ');
-
+                    */
                     // Remove carregando...
                     document.getElementById('loadingStatus').setAttribute('visible', 'false');
                     //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
@@ -80,6 +71,29 @@
                 testEntityAdded = true;
             });
         };
+
+        function GenerateCubes(e, latVal, longVal, idv) {
+            // Add a box to the north of the initial GPS position
+            const entity = document.createElement("a-box");
+            entity.setAttribute("scale", {
+                x: 20,
+                y: 20,
+                z: 20
+            });
+            entity.setAttribute('id', idv);
+            entity.setAttribute('material', { color: 'red' });
+            entity.setAttribute('gps-new-entity-place', {
+                latitude: e.detail.position.latitude + latVal,
+                longitude: e.detail.position.longitude + longVal
+            });
+            entity.addEventListener("click", () => {
+                alert(entity.id);
+            });
+            entity.setAttribute('opacity', '0.5')
+            document.querySelector("a-scene").appendChild(entity);
+
+
+        }
 
         function GeneratePlane(e, latVal, longVal, idv) {
             // Plane
