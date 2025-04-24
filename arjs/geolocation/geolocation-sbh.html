@@ -22,7 +22,8 @@ window.onload = () => {
 
     const targetLat = -17.3787301;  // Substitua por sua latitude
     const targetLon = -44.9672247;  // Substitua por sua longitude
-    const tolerance = 0.0001; // Aproximadamente 10 metros
+    // Durante meus testes notei que o GPS tem uma imprecisão média de 16 metros
+    const tolerance = 0.00016; // Aproximadamente 10 metros
 
     const el = document.querySelector("[gps-new-camera]");
 
