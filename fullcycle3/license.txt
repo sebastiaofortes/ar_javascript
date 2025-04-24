@@ -1,0 +1,11 @@
+Model Information:
+* title:	Go Gopher
+* source:	https://sketchfab.com/3d-models/go-gopher-e0e18cb276574666a39d2a0926510fc1
+* author:	Mysticreator (https://sketchfab.com/Mysticreator)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Go Gopher" (https://sketchfab.com/3d-models/go-gopher-e0e18cb276574666a39d2a0926510fc1) by Mysticreator (https://sketchfab.com/Mysticreator) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
