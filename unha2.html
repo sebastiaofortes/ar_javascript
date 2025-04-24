@@ -1,0 +1,137 @@
+<!-- Inclua A-Frame e o jsQR -->
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+<style>
+  body,
+  html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  #video {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 1;
+  }
+
+  a-scene {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2;
+  }
+</style>
+
+<body>
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="canvas" hidden></canvas>
+
+  <!-- Cena A-Frame configurada para suportar AR com WebXR -->
+  <!-- webxr="optionalFeatures: hit-test;"  Ativa o recurso opcional 'hit-test' para detectar superfícies reais -->
+  <!-- xr-mode="immersive-ar" Define que esta cena é para realidade aumentada (AR), não VR -->
+  <!-- vr-mode-ui="enabled: false" Esconde o botão padrão de VR (porque vamos controlar isso manualmente) -->
+  <!-- device-orientation-permission-ui="enabled: false" Desativa a interface automática que pede permissão para sensores -->
+  <!-- renderer="colorManagement: true; physicallyCorrectLights: true;" Ativa renderização mais realista com correção de cor e luzes físicas -->
+  <!-- embedded Faz com que a cena fique "embutida" na página, permitindo sobreposição ao vídeo da câmera -->
+  <a-scene webxr="optionalFeatures: hit-test;" xr-mode="immersive-ar" embedded vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false" renderer="colorManagement: true; physicallyCorrectLights: true;"
+    embedded>
+    <a-assets>
+      <a-asset-item id="avatarModel" src="fullcycle2/scene.gltf"></a-asset-item>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;"
+      raycaster="far: 100; objects: .clickable">
+    </a-camera>
+    <a-plane id="planeblue" color="blue" opacity="0.7" position="0 1.5 -3" height="0.552" width="1" rotation="0 0 0"
+      visible="false" class="clickable">
+      <a-entity id="qrText" text="value: Aguarde o QR; color: #000;"></a-entity>
+    </a-plane>
+    <a-gltf-model src="#avatarModel" scale="0.5 0.5 0.5" position="0 0 -1" id="gophermodel" visible="false" class="clickable">
+    </a-gltf-model>
+
+
+  </a-scene>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const qrText = document.querySelector('#qrText');
+
+    planeblue.addEventListener("click", event => {
+      alert("Click event detected!");
+    });
+
+    gophermodel.addEventListener("click", event => {
+      alert("Click event detected!");
+    });
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then(function (stream) {
+        video.srcObject = stream;
+        video.setAttribute("playsinline", true);
+        video.play();
+        requestAnimationFrame(tick);
+      });
+
+    function qrCenter(location) {
+      const x = (
+        location.topLeftCorner.x +
+        location.topRightCorner.x +
+        location.bottomLeftCorner.x +
+        location.bottomRightCorner.x
+      ) / 4;
+      const y = (
+        location.topLeftCorner.y +
+        location.topRightCorner.y +
+        location.bottomLeftCorner.y +
+        location.bottomRightCorner.y
+      ) / 4;
+      return { x, y };
+    }
+
+    function getWorldPositionFromImage(x_px, y_px, videoWidth, videoHeight, z_dist = -3) {
+      const fov = 60 * Math.PI / 180;
+      const worldScreenHeight = 2 * Math.abs(z_dist) * Math.tan(fov / 2);
+      const worldScreenWidth = (videoWidth / videoHeight) * worldScreenHeight;
+      const normX = (x_px / videoWidth) - 0.5;
+      const normY = 0.5 - (y_px / videoHeight);
+      const x = normX * worldScreenWidth;
+      const y = normY * worldScreenHeight;
+      return [x, y, z_dist];
+    }
+
+    function tick() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, canvas.width, canvas.height);
+        if (code) {
+          const center = qrCenter(code.location);
+          const position = getWorldPositionFromImage(
+            center.x, center.y, canvas.width, canvas.height, -3
+          );
+          if (code.data === "gopher") {
+            gophermodel.setAttribute('position', position.join(' '));
+            gophermodel.setAttribute('visible', true);
+          } else {
+            qrText.setAttribute('text', 'value', code.data);
+            planeblue.setAttribute('position', position.join(' '));
+            planeblue.setAttribute('visible', true);
+          }
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+  </script>
+</body>
