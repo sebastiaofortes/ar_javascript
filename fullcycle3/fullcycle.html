@@ -1,20 +1,53 @@
-
 <html>
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-      </head>
-  <body>
-    <a-scene mindar-image="imageTargetSrc: fullcycle.mind;" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      <a-assets>
-        <a-asset-item id="avatarModel" src="scene.gltf"></a-asset-item>
-      </a-assets>
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-plane color="blue" opaciy="0.5" position="0 0 0" height="0.552" width="1" rotation="0 0 0"></a-plane>
-      <a-gltf-model rotation="0 -90 0 " position="0 0 0" src="#avatarModel">
 
-    </a-scene>
-  </body>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+</head>
+
+<body>
+  <a-scene mindar-image="imageTargetSrc: fullcycle.mind;" vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+    <a-assets>
+      <a-asset-item id="avatarModel" src="scene.gltf"></a-asset-item>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;"
+      raycaster="far: ${customFields.libVersion}; objects: .clickable">
+    </a-camera>
+
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-gltf-model rotation="0 -90 0" position="0 0 0" src="#avatarModel" class="clickable" id="planegopher">
+      </a-gltf-model>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    // Aguarda a cena estar carregada
+    document.querySelector('a-scene').addEventListener('loaded', () => {
+      const model = document.getElementById("planegopher");
+      if (model) {
+        model.addEventListener("click", () => {
+          let scale = model.getAttribute("scale");
+          let interval = setInterval(() => {
+            if (scale.x <= 0.01) {
+              clearInterval(interval);
+              // Restaura o tamanho original após o encolhimento total
+              model.setAttribute("scale", "1 1 1");
+            } else {
+              scale.x *= 0.9;
+              scale.y *= 0.9;
+              scale.z *= 0.9;
+              model.setAttribute("scale", `${scale.x} ${scale.y} ${scale.z}`);
+            }
+          }, 50);
+        });
+      } else {
+        console.warn("Modelo ainda não disponível.");
+      }
+    });
+  </script>
+</body>
+
 </html>
