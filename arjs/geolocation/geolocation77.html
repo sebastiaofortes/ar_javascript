@@ -118,7 +118,7 @@
                 plane.setAttribute('animation__out', {
                     property: 'scale',
                     to: '0 0 0',
-                    dur: 500,
+                    dur: 700,
                     easing: 'easeInBack'
                 });
 
@@ -128,6 +128,15 @@
                     plane.setAttribute('gps-new-entity-place', {
                         latitude: e.detail.position.latitude + newPosition.lat,
                         longitude: e.detail.position.longitude + newPosition.long
+                    });
+
+                    // Reaplica a animação de entrada após o reposicionamento
+                    plane.setAttribute('animation__in', {
+                        property: 'scale',
+                        from: '0 0 0',
+                        to: '4 2 1',
+                        dur: 1000,
+                        easing: 'easeOutElastic'
                     });
 
                 }, 500); // Espera a animação de saída terminar
