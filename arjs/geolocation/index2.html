@@ -1,0 +1,62 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js/aframe/build/aframe-ar.min.js"></script>
+  </head>
+  <body style="margin: 0; overflow: hidden">
+    <a-scene
+      vr-mode-ui="enabled: false"
+      embedded
+      arjs="sourceType: webcam; gpsMinDistance: 1"
+    >
+      <!-- Câmera com GPS -->
+      <a-camera gps-new-camera="gpsMinDistance: 1"></a-camera>
+
+      <!-- Caixa em uma coordenada GPS próxima -->
+      <a-box
+        id="moving-box"
+        gps-entity-place="latitude: -23.55052; longitude: -46.63331"
+        color="red"
+        scale="5 5 5"
+      ></a-box>
+    </a-scene>
+
+    <script>
+      let lastPosition = null;
+      const box = document.getElementById('moving-box');
+
+      // Função simples para calcular distância entre duas coordenadas (Haversine)
+      function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; // Raio da Terra em metros
+        const toRad = x => x * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a =
+          Math.sin(dLat / 2) ** 2 +
+          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+          Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      }
+
+      document.querySelector('[gps-new-camera]').addEventListener('gps-camera-update-position', (e) => {
+        const { latitude, longitude } = e.detail.position;
+
+        if (lastPosition) {
+          const dist = calculateDistance(
+            lastPosition.latitude,
+            lastPosition.longitude,
+            latitude,
+            longitude
+          );
+
+          // Ajusta o tamanho do cubo proporcionalmente à distância
+          const scaleFactor = Math.min(Math.max(dist / 10, 2), 20); // entre 2 e 20
+          box.setAttribute('scale', `${scaleFactor} ${scaleFactor} ${scaleFactor}`);
+        }
+
+        lastPosition = { latitude, longitude };
+      });
+    </script>
+  </body>
+</html>
