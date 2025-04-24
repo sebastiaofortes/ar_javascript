@@ -45,12 +45,6 @@
             el.addEventListener("gps-camera-update-position", e => {
                 if (!testEntityAdded) {
 
-                    // Desenha os cubos
-                    //positionConfigs.forEach(cfg => {
-                    //    GenerateCubes(e, cfg.lat, cfg.long, cfg.id, cfg.color, cfg.id);
-                    //});
-
-
                     // Modelo GLTF
                     const model = document.createElement("a-gltf-model");
                     model.setAttribute("src", "scene.gltf");
@@ -62,28 +56,9 @@
                     });
                     document.querySelector("a-scene").appendChild(model);
 
-                    // Desenha os cubos
-                    //positionConfigs.forEach(cfg => {
-                    //    GeneratePlane(e, cfg.lat, cfg.long, cfg.id);
-                    //});
+                    // Desenha acoruja
                     GeneratePlane(e, -0.00007, 0, 'Box2N');
 
-                    /*
-                    GeneratePlane(e, -0.0012, 0.0002, 'a');
-                    GeneratePlane(e, -0.0006, 0.0002, 'b');
-                    GeneratePlane(e, -0.0003, 0.0002, 'c');
-                    GeneratePlane(e, 0.0001, 0.0002, 'd');
-                    GeneratePlane(e, 0.0004, 0.0001, 'e')
-                    GeneratePlane(e, 0.0005, 0.0002, 'f')
-                    GeneratePlane(e, 0.0006, 0.0003, 'g')
-                    GeneratePlane(e, 0.0007, 0.0001, 'h')
-                    GeneratePlane(e, 0.0011, 0.0008, 'i')
-                    GeneratePlane(e, -0.0011, 0.0008, 'j')
-                    GeneratePlane(e, 0.0011, +0.0008, 'k')
-                    GeneratePlane(e, -0.0012, 0.0002, 'LL');
-                    GeneratePlane(e, -0.0006, -0.0002, 'MM');
-                    GeneratePlane(e, -0.0003, -0.0002, 'JJ');
-                    */
                     // Remove carregando...
                     document.getElementById('loadingStatus').setAttribute('visible', 'false');
                     //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
@@ -122,6 +97,13 @@
             plane.setAttribute('id', idv);
             plane.setAttribute('width', 8);
             plane.setAttribute('height', 4);
+            plane.setAttribute('animation__in', {
+                property: 'scale',
+                from: '0 0 0',
+                to: '8 4 1',
+                dur: 1000,
+                easing: 'easeOutElastic'
+            });
             // faz com que o plano rotacione para sempre ficar virado para a câmera,
             // necessário dependência <!-- <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
             plane.setAttribute('look-at', '[gps-new-camera]');
@@ -138,7 +120,6 @@
                     latitude: e.detail.position.latitude + newPosition.lat,
                     longitude: e.detail.position.longitude + newPosition.long
                 });
-                //alert(`${idv} movido para: ${newPosition.descricao}`);
             });
             document.querySelector("a-scene").appendChild(plane);
         }
