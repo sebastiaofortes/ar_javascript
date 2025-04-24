@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Desenhando no AR</title>
+    <title>Detectar Caminhada e Direção</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://unpkg.com/ar.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
   </head>
@@ -13,21 +13,46 @@
     >
       <a-camera gps-new-camera="gpsMinDistance: 1;" rotation-reader></a-camera>
 
+      <!-- Objeto alvo -->
+      <a-box
+        id="target-box"
+        color="blue"
+        depth="2" height="2" width="2"
+        gps-entity-place="latitude: -23.5629; longitude: -46.6544"
+      ></a-box>
+
       <script>
-        // Adiciona evento de clique para "desenhar" com esferas
-        document.addEventListener('click', function () {
-          const camera = document.querySelector('[gps-new-camera]');
-          const position = camera.components['gps-new-camera'].currentCoords;
+        const camera = document.querySelector('[gps-new-camera]');
+        const target = document.getElementById('target-box');
 
-          if (!position) return;
+        function isUserFacingTarget() {
+          const camPos = new THREE.Vector3();
+          camera.object3D.getWorldPosition(camPos);
 
-          const sphere = document.createElement('a-sphere');
-          sphere.setAttribute('radius', 0.5);
-          sphere.setAttribute('color', '#FF5722');
-          sphere.setAttribute('gps-entity-place', `latitude: ${position.latitude}; longitude: ${position.longitude}`);
-          sphere.setAttribute('animation__scale', 'property: scale; to: 1.2 1.2 1.2; dur: 500; easing: easeOutElastic;');
+          const targetPos = new THREE.Vector3();
+          target.object3D.getWorldPosition(targetPos);
 
-          document.querySelector('a-scene').appendChild(sphere);
+          const camDir = new THREE.Vector3();
+          camera.object3D.getWorldDirection(camDir);
+
+          const toTarget = new THREE.Vector3();
+          toTarget.subVectors(targetPos, camPos).normalize();
+
+          const angle = camDir.angleTo(toTarget) * (180 / Math.PI);
+
+          return angle < 25; // ângulo ajustável
+        }
+
+        window.addEventListener('devicemotion', (event) => {
+          const acc = event.accelerationIncludingGravity;
+          const totalAcc = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+
+          if (totalAcc > 18) {
+            if (isUserFacingTarget()) {
+              console.log('Caminhando na direção do cubo!');
+              target.setAttribute('color', 'lime');
+            }
+          }
         });
       </script>
     </a-scene>
