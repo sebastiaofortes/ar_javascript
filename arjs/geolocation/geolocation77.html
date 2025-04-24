@@ -115,33 +115,11 @@
             plane.setAttribute('transparent', 'true');
             plane.setAttribute('class', 'clickable');
             plane.addEventListener("click", () => {
-                plane.setAttribute('animation__out', {
-                    property: 'scale',
-                    to: '0 0 0',
-                    dur: 500,
-                    easing: 'easeInBack'
+                const newPosition = getRandomPositionConfig(e);
+                plane.setAttribute('gps-new-entity-place', {
+                    latitude: e.detail.position.latitude + newPosition.lat,
+                    longitude: e.detail.position.longitude + newPosition.long
                 });
-
-                setTimeout(() => {
-
-                    const newPosition = getRandomPositionConfig(e);
-                    plane.setAttribute('gps-new-entity-place', {
-                        latitude: e.detail.position.latitude + newPosition.lat,
-                        longitude: e.detail.position.longitude + newPosition.long
-                    });
-
-                    // Reaplica a animação de entrada após o reposicionamento
-                    plane.setAttribute('animation__in', {
-                        property: 'scale',
-                        from: '0 0 0',
-                        to: '4 2 1',
-                        dur: 1000,
-                        easing: 'easeOutElastic'
-                    });
-
-                }, 600); // Espera a animação de saída terminar
-
-
             });
             document.querySelector("a-scene").appendChild(plane);
         }
