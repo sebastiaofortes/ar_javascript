@@ -14,7 +14,7 @@
 <body>
     <a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false'
         renderer='antialias: true; alpha: true'>
-        <a-camera gps-new-camera='gpsMinDistance: 10' cursor="rayOrigin: mouse"
+        <a-camera gps-new-camera='gpsMinDistance: 1' cursor="rayOrigin: mouse"
             raycaster="far: 100; objects: .clickable">
             <a-entity id="loadingStatus" position="0 0 -1"
                 text="value: Carregando...; color: white; align: center; width: 2">
