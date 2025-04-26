@@ -56,13 +56,13 @@
 
         gophermodel.addEventListener("click", event => {
 
-                // Pega a posição da câmera (from) e do objeto (to) em world coords
-    const camera = document.querySelector('a-camera');
-    const from = camera.object3D.getWorldPosition(new THREE.Vector3());
-    const to = gophermodel.object3D.getWorldPosition(new THREE.Vector3());
+            // Pega a posição da câmera (from) e do objeto (to) em world coords
+            const camera = document.querySelector('a-camera');
+            const from = camera.object3D.getWorldPosition(new THREE.Vector3());
+            const to = gophermodel.object3D.getWorldPosition(new THREE.Vector3());
 
-    //fireLaser(from, to);
-    fireLaserAnimated(from, to, 80); // 250ms de animação, pode ajustar!
+            //fireLaser(from, to);
+            fireLaserAnimated(from, to, 80); // 250ms de animação, pode ajustar!
 
 
             score += 1;
@@ -115,63 +115,63 @@
             const index = Math.floor(Math.random() * positionConfigs.length); return positionConfigs[index];
         }
 
-function fireLaserAnimated(from, to, duration = 250) {
-    const laser = document.createElement('a-entity');
+        function fireLaserAnimated(from, to, duration = 250) {
+            const laser = document.createElement('a-entity');
 
-    const start = new THREE.Vector3(from.x, from.y, from.z);
-    const end = new THREE.Vector3(to.x, to.y, to.z);
-    const direction = new THREE.Vector3().subVectors(end, start).normalize();
-    const fullDistance = start.distanceTo(end);
+            const start = new THREE.Vector3(from.x, from.y, from.z);
+            const end = new THREE.Vector3(to.x, to.y, to.z);
+            const direction = new THREE.Vector3().subVectors(end, start).normalize();
+            const fullDistance = start.distanceTo(end);
 
-    // Começa com height 0.01 (não zero p/ evitar problema!)
-    let currentDistance = 0.01;
-    const radius = 0.02;
+            // Começa com height 0.01 (não zero p/ evitar problema!)
+            let currentDistance = 0.01;
+            const radius = 0.02;
 
-    laser.setAttribute('geometry', `primitive: cylinder; height: ${currentDistance}; radius: ${radius};`);
-    // Material do laser
-    laser.setAttribute('material', 'color: red; opacity: 0.8;');
+            laser.setAttribute('geometry', `primitive: cylinder; height: ${currentDistance}; radius: ${radius};`);
+            // Material do laser
+            laser.setAttribute('material', 'color: red; opacity: 0.8;');
 
-    // Posição inicial = metade do segmento inicial (começa colado na câmera)
-    let position = new THREE.Vector3().copy(start).add(direction.clone().multiplyScalar(currentDistance/2));
-    laser.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+            // Posição inicial = metade do segmento inicial (começa colado na câmera)
+            let position = new THREE.Vector3().copy(start).add(direction.clone().multiplyScalar(currentDistance / 2));
+            laser.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
 
-    document.querySelector('a-scene').appendChild(laser);
+            document.querySelector('a-scene').appendChild(laser);
 
-    // Rotaciona eixo Y do cilindro para apontar em direção ao alvo
-    laser.object3D.lookAt(end);
+            // Rotaciona eixo Y do cilindro para apontar em direção ao alvo
+            laser.object3D.lookAt(end);
 
-    // Timestamp inicial
-    const startTime = performance.now();
+            // Timestamp inicial
+            const startTime = performance.now();
 
-    function animateLaser(now) {
-        let elapsed = now - startTime;
-        // linear: cresce proporcional ao tempo, clamp > distance
-        let t = Math.min(1, elapsed / duration);
-        currentDistance = t * fullDistance;
+            function animateLaser(now) {
+                let elapsed = now - startTime;
+                // linear: cresce proporcional ao tempo, clamp > distance
+                let t = Math.min(1, elapsed / duration);
+                currentDistance = t * fullDistance;
 
-        // Atualiza geometria (height, centro)
-        laser.setAttribute('geometry', `primitive: cylinder; height: ${currentDistance}; radius: ${radius};`);
+                // Atualiza geometria (height, centro)
+                laser.setAttribute('geometry', `primitive: cylinder; height: ${currentDistance}; radius: ${radius};`);
 
-        // Atualiza position (meio do trajeto de comprimento currentDistance)
-        // Sai do start + direção * (currentDistance/2)
-        let head = new THREE.Vector3().copy(start).add(direction.clone().multiplyScalar(currentDistance/2));
-        laser.setAttribute('position', `${head.x} ${head.y} ${head.z}`);
+                // Atualiza position (meio do trajeto de comprimento currentDistance)
+                // Sai do start + direção * (currentDistance/2)
+                let head = new THREE.Vector3().copy(start).add(direction.clone().multiplyScalar(currentDistance / 2));
+                laser.setAttribute('position', `${head.x} ${head.y} ${head.z}`);
 
-        // Mantém orientação correta
-        laser.object3D.lookAt(end);
+                // Mantém orientação correta
+                laser.object3D.lookAt(end);
 
-        if (t < 1) {
+                if (t < 1) {
+                    requestAnimationFrame(animateLaser);
+                } else {
+                    // Opcional: fade-out rápido
+                    setTimeout(() => {
+                        if (laser.parentNode) laser.parentNode.removeChild(laser);
+                    }, 150);
+                }
+            }
             requestAnimationFrame(animateLaser);
-        } else {
-            // Opcional: fade-out rápido
-            setTimeout(()=>{
-                if (laser.parentNode) laser.parentNode.removeChild(laser);
-            }, 150);
         }
-    }
-    requestAnimationFrame(animateLaser);
-}
-    
+
     </script>
 </body>
 
