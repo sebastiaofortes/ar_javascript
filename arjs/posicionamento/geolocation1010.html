@@ -13,6 +13,14 @@
 </head>
 
 <body>
+    <div id="startScreen" style="position: absolute; top: 0; left: 0; 
+    width: 100%; height: 100%; background: rgba(0,0,0,0.8); 
+    display: flex; flex-direction: column; justify-content: center; 
+    align-items: center; color: white; font-size: 24px; z-index: 10;">
+    
+        <p>Instruções: Clique no modelo 3D para ganhar pontos!</p>
+        <button id="playButton" style="padding: 10px 20px; font-size: 20px;">Jogar</button>
+    </div>
     <a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false'
         renderer='antialias: true; alpha: true'>
         <a-entity light="type: ambient; color: #ffffff; intensity: 4"></a-entity>
@@ -79,6 +87,12 @@
                 document.getElementById('loadingStatus').setAttribute('visible', 'false');
             }
             testEntityAdded = true;
+
+                // Botão de Play
+            document.getElementById('playButton').addEventListener('click', () => {
+                document.getElementById('startScreen').style.display = 'none'; // Esconde a tela inicial
+                document.getElementById('arScene').style.display = 'block';    // Mostra a cena AR
+            });
         };
         
         function getRandomPositionConfig() {
