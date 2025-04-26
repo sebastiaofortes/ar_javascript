@@ -45,6 +45,7 @@
             </a-text>
         </a-camera>
         <a-assets>
+            <audio id="laserAudio" src="raio-laser.mp3"></audio>
             <a-asset-item id="avatarModel" src="mech_drone.glb"></a-asset-item>
         </a-assets>
         <a-gltf-model src="#avatarModel" animation-mixer scale="3 3 3" position="0 1 -2" id="gophermodel" visible="true"
@@ -116,6 +117,9 @@
         }
 
         function fireLaserAnimated(from, to, duration = 250) {
+            document.getElementById('laserAudio').currentTime = 0;
+            document.getElementById('laserAudio').play();
+            
             const laser = document.createElement('a-entity');
 
             const start = new THREE.Vector3(from.x, from.y, from.z);
