@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/MindAR-js/aframe/examples/image-tracking/assets/card-example.mind; autoStart: true;" 
+             vr-mode-ui="enabled: false" 
+             device-orientation-permission-ui="enabled: false" 
+             embedded>
+
+      <a-assets>
+        <a-asset-item id="duckModel" src="https://cdn.jsdelivr.net/gh/MindAR-js/aframe/examples/image-tracking/assets/duck.glb"></a-asset-item>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    </a-scene>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const scene = document.querySelector('a-scene');
+        scene.addEventListener('click', (event) => {
+          const touch = event.touches ? event.touches[0] : event;
+          const touchX = touch.clientX / window.innerWidth;
+          const touchY = touch.clientY / window.innerHeight;
+          
+          // Cria uma entidade no local do toque (só exemplo: posição fixa)
+          const duck = document.createElement('a-entity');
+          duck.setAttribute('gltf-model', '#duckModel');
+          duck.setAttribute('position', '0 0 -1'); // spawn 1 metro à frente
+          duck.setAttribute('scale', '0.1 0.1 0.1');
+          scene.appendChild(duck);
+
+          console.log('Clique detectado. Modelo adicionado.');
+        });
+      });
+    </script>
+  </body>
+</html>
