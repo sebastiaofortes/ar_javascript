@@ -23,7 +23,7 @@
 
               <!-- HUD do contador -->
             <a-text id="scoreText"
-                value="POntos: 0"
+                value="Pontos: 0"
                 color="yellow"
                 width="2"
                 align="left"
@@ -31,17 +31,20 @@
             </a-text>
         </a-camera>
         <a-assets>
-            <video id="meuVideo" preload="auto" autoplay loop="true" src="vv2.webm"></video>
             <a-asset-item id="avatarModel" src="mech_drone.glb"></a-asset-item>
         </a-assets>
-        <a-gltf-model src="#avatarModel" animation-mixer scale="3 3 3" position="0 0 -1" id="gophermodel" visible="true" class="clickable">
+        <a-gltf-model src="#avatarModel" animation-mixer scale="3 3 3" position="0 1 -2" id="gophermodel" visible="true" class="clickable">
         </a-gltf-model>
     </a-scene>
     <script>
+        let score = 0;
+
         gophermodel.addEventListener("click", event => {
+            score += 1;
+            document.getElementById('scoreText').setAttribute('value', `Pontos: ${score}`);
+
             const newPosition = getRandomPositionConfig();
             position = `${newPosition.x} ${newPosition.y} ${newPosition.z}`;
-            //gophermodel.setAttribute('position', position);
 
             let scale = gophermodel.getAttribute("scale");
             let interval = setInterval(() => {
@@ -55,8 +58,6 @@
                 }
             }, 25);
         });
-
-        let score = 0;
 
         // Para serem clicáveis os objetos precisam estar a uma distãncia menor que 0,001
         // Isso ocorre devido a minha configuração de raycaster 
@@ -75,103 +76,14 @@
             let testEntityAdded = false;
 
             if (!testEntityAdded) {
-
-                //AddPlane(0, 1, -5, 'red');
-                // Remove carregando...
                 document.getElementById('loadingStatus').setAttribute('visible', 'false');
             }
             testEntityAdded = true;
         };
-
-        function AddCube(latitude = 0, altura = 0, longitude = 0, color) {
-            const box = document.createElement('a-box');
-            position = `${latitude} ${altura} ${longitude} `
-            box.setAttribute('position', position);
-            box.setAttribute('color', color);
-            box.setAttribute('depth', '1');
-            box.setAttribute('height', '1');
-            box.setAttribute('width', '1');
-            box.setAttribute('class', 'clickable');
-            box.addEventListener('click', () => {
-                alert(`Cubo ${box.id || 'sem ID'} clicado!`);
-            });
-            document.querySelector('a-scene').appendChild(box);
-        }
-
-        function AddPlane(latitude = 0, altura = 0, longitude = 0, color) {
-            const box = document.createElement('a-plane');
-            box.setAttribute('width', 4);
-            box.setAttribute('height', 3);
-            // faz com que o plano rotacione para sempre ficar virado para a câmera,
-            // necessário dependência <!-- <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script> -->
-            box.setAttribute('look-at', '[camera]');
-            position = `${latitude} ${altura} ${longitude} `
-            box.setAttribute('position', position);
-            box.setAttribute('material', 'src: #meuVideo');
-            box.setAttribute('transparent', 'true');
-            box.setAttribute('class', 'clickable');
-            box.addEventListener('click', () => {
-                score += 1;
-                document.getElementById('scoreText').setAttribute('value', `Pontos: ${score}`);
-
-                const newPosition = getRandomPositionConfig();
-                position = `${newPosition.x} ${newPosition.y} ${newPosition.z} `
-                
-                let scale = box.getAttribute("scale");
-                let interval = setInterval(() => {
-                    if (scale.x <= 0.01) {
-                        clearInterval(interval); // Restaura o tamanho original após o encolhimento total
-                        box.setAttribute("scale", "1 1 1");
-                        // moda a posição
-                        box.setAttribute('position', position);
-                    } else {
-                        scale.x *= 0.9; scale.y *= 0.9; scale.z *= 0.9;
-                        box.setAttribute("scale", `${scale.x} ${scale.y} ${scale.z}`);
-                    }
-                }, 25);
-            });
-            document.querySelector('a-scene').appendChild(box);
-        } 
         
         function getRandomPositionConfig() {
             const index = Math.floor(Math.random() * positionConfigs.length); return positionConfigs[index];
         } 
-
-        function AddGLTF(latitude = 0, altura = 0, longitude = 0, gltfModelUrl) {
-    const model = document.createElement('a-entity');
-    model.setAttribute('gltf-model', gltfModelUrl);
-    model.setAttribute('scale', '1 1 1');
-    model.setAttribute('class', 'clickable');
-
-    let position = `${latitude} ${altura} ${longitude}`;
-    model.setAttribute('position', position);
-
-    model.addEventListener('model-loaded', () => {
-        // Só adiciona o evento de clique depois que o modelo estiver carregado
-        model.addEventListener('click', () => {
-            score += 1;
-            document.getElementById('scoreText').setAttribute('value', `Pontos: ${score}`);
-
-            const newPosition = getRandomPositionConfig();
-            position = `${newPosition.x} ${newPosition.y} ${newPosition.z}`;
-
-            let scale = model.getAttribute("scale");
-            let interval = setInterval(() => {
-                if (scale.x <= 0.01) {
-                    clearInterval(interval);
-                    model.setAttribute("scale", "1 1 1");
-                    model.setAttribute('position', position);
-                } else {
-                    scale.x *= 0.9; scale.y *= 0.9; scale.z *= 0.9;
-                    model.setAttribute("scale", `${scale.x} ${scale.y} ${scale.z}`);
-                }
-            }, 25);
-        });
-    });
-
-    document.querySelector('a-scene').appendChild(model);
-}
-
 
         </script>
 </body>
