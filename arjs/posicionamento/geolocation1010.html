@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
     -->
     <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
-    
+
     <!-- Importação da fonte Orbitron -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <script type='text/javascript'
@@ -19,13 +19,15 @@
 </head>
 
 <body>
-    <div id="startScreen" style="position: absolute; top: 0; left: 0; 
+    <div id="startScreen"
+        style="position: absolute; top: 0; left: 0; 
     width: 100%; height: 100%; background: rgba(0,0,0,0.8); 
     display: flex; flex-direction: column; justify-content: center; 
     align-items: center; color: white; font-size: 5vw; z-index: 10; text-align: center; font-family: 'Orbitron', sans-serif;">
-    
+
         <p>Instruções: Clique nos drones para os destruir e ganhar pontos!</p>
-        <button id="playButton" style="padding: 2vw 4vw; font-size: 5vw; font-family: 'Orbitron', sans-serif;">Jogar</button>
+        <button id="playButton"
+            style="padding: 2vw 4vw; font-size: 5vw; font-family: 'Orbitron', sans-serif;">Jogar</button>
     </div>
     <a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false'
         renderer='antialias: true; alpha: true'>
@@ -35,28 +37,34 @@
                 text="value: Carregando...; color: white; align: center; width: 2">
             </a-entity>
 
-              <!-- HUD do contador -->
-        <!-- A fonte Orbitron utulizada nesse componente foi gerada por uma ferramenta online -->
-            <a-text id="scoreText"
-                value="Pontos: 0"
-                negate="false"
-                color="yellow"
-                width="2"
-                align="left"
+            <!-- HUD do contador -->
+            <!-- A fonte Orbitron utulizada nesse componente foi gerada por uma ferramenta online -->
+            <a-text id="scoreText" value="Pontos: 0" negate="false" color="yellow" width="2" align="left"
                 font="./Orbitron-font/Orbitron-SemiBold-BF66babf323d53a-msdf.json""
-                position="-0.2 0.7 -1">
+                position=" -0.2 0.7 -1">
             </a-text>
         </a-camera>
         <a-assets>
             <a-asset-item id="avatarModel" src="mech_drone.glb"></a-asset-item>
         </a-assets>
-        <a-gltf-model src="#avatarModel" animation-mixer scale="3 3 3" position="0 1 -2" id="gophermodel" visible="true" class="clickable">
+        <a-gltf-model src="#avatarModel" animation-mixer scale="3 3 3" position="0 1 -2" id="gophermodel" visible="true"
+            class="clickable">
         </a-gltf-model>
     </a-scene>
     <script>
         let score = 0;
 
         gophermodel.addEventListener("click", event => {
+
+                // Pega a posição da câmera (from) e do objeto (to) em world coords
+    const camera = document.querySelector('a-camera');
+    const from = camera.object3D.getWorldPosition(new THREE.Vector3());
+    const to = gophermodel.object3D.getWorldPosition(new THREE.Vector3());
+
+    //fireLaser(from, to);
+    fireLaserAnimated(from, to, 80); // 250ms de animação, pode ajustar!
+
+
             score += 1;
             document.getElementById('scoreText').setAttribute('value', `Pontos: ${score}`);
 
@@ -97,17 +105,74 @@
             }
             testEntityAdded = true;
 
-                // Botão de Play
+            // Botão de Play
             document.getElementById('playButton').addEventListener('click', () => {
                 document.getElementById('startScreen').style.display = 'none'; // Esconde a tela inicial
             });
         };
-        
+
         function getRandomPositionConfig() {
             const index = Math.floor(Math.random() * positionConfigs.length); return positionConfigs[index];
-        } 
+        }
 
-        </script>
+function fireLaserAnimated(from, to, duration = 250) {
+    const laser = document.createElement('a-entity');
+
+    const start = new THREE.Vector3(from.x, from.y, from.z);
+    const end = new THREE.Vector3(to.x, to.y, to.z);
+    const direction = new THREE.Vector3().subVectors(end, start).normalize();
+    const fullDistance = start.distanceTo(end);
+
+    // Começa com height 0.01 (não zero p/ evitar problema!)
+    let currentDistance = 0.01;
+    const radius = 0.02;
+
+    laser.setAttribute('geometry', `primitive: cylinder; height: ${currentDistance}; radius: ${radius};`);
+    // Material do laser
+    laser.setAttribute('material', 'color: red; opacity: 0.8;');
+
+    // Posição inicial = metade do segmento inicial (começa colado na câmera)
+    let position = new THREE.Vector3().copy(start).add(direction.clone().multiplyScalar(currentDistance/2));
+    laser.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+
+    document.querySelector('a-scene').appendChild(laser);
+
+    // Rotaciona eixo Y do cilindro para apontar em direção ao alvo
+    laser.object3D.lookAt(end);
+
+    // Timestamp inicial
+    const startTime = performance.now();
+
+    function animateLaser(now) {
+        let elapsed = now - startTime;
+        // linear: cresce proporcional ao tempo, clamp > distance
+        let t = Math.min(1, elapsed / duration);
+        currentDistance = t * fullDistance;
+
+        // Atualiza geometria (height, centro)
+        laser.setAttribute('geometry', `primitive: cylinder; height: ${currentDistance}; radius: ${radius};`);
+
+        // Atualiza position (meio do trajeto de comprimento currentDistance)
+        // Sai do start + direção * (currentDistance/2)
+        let head = new THREE.Vector3().copy(start).add(direction.clone().multiplyScalar(currentDistance/2));
+        laser.setAttribute('position', `${head.x} ${head.y} ${head.z}`);
+
+        // Mantém orientação correta
+        laser.object3D.lookAt(end);
+
+        if (t < 1) {
+            requestAnimationFrame(animateLaser);
+        } else {
+            // Opcional: fade-out rápido
+            setTimeout(()=>{
+                if (laser.parentNode) laser.parentNode.removeChild(laser);
+            }, 150);
+        }
+    }
+    requestAnimationFrame(animateLaser);
+}
+    
+    </script>
 </body>
 
 </html>
