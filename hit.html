@@ -1,174 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>three.js ar - hit test</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-		<link type="text/css" rel="stylesheet" href="main.css">
-	</head>
-	<body>
+<head>
+  <meta charset="UTF-8" />
+  <title>Three.js WebXR AR Hit Test with Support Check</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #info {
+      position: absolute; top: 1em; left: 1em;
+      color: #111; background: #fff9; padding: 10px;
+      border-radius: 4px; z-index: 2; font-family: sans-serif;
+    }
+    #no-xr {
+      position: absolute; top: 40%; left: 0; right: 0;
+      margin: auto; width: max-content; 
+      background: #e43; color: #fff; padding: 2em 2em 2em 5em;
+      font-size: 1.4em; border-radius: 12px;
+      box-shadow: 0 2px 24px #5556; display:none;
+      z-index:10;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">
+    <strong>WebXR AR Hit Test</strong><br>
+    - Use <b>Chrome Android</b> ou <b>Samsung Internet</b>.<br>
+    - Toque no <b>botão [AR]</b> se disponível.<br>
+    - Toque numa superfície para "ancorar" um cubo.<br>
+  </div>
+  <div id="no-xr">Seu dispositivo <b>não suporta AR WebXR</b>.<br>
+    Tente <b>Chrome</b> ou <b>Samsung Internet</b> em um Android moderno.<br>
+    <small>HTTPS também é obrigatório.</small>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.151.3/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.151.3/examples/js/ARButton.js"></script>
+  <script>
+    async function checkXRSupport() {
+      if (!navigator.xr) return false;
+      try {
+        return await navigator.xr.isSessionSupported('immersive-ar');
+      } catch (e) {
+        return false;
+      }
+    }
 
-		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> ar - hit test<br/>
-		</div>
+    (async () => {
+      const hasXR = await checkXRSupport();
+      if (!hasXR) {
+        document.getElementById('no-xr').style.display = 'block';
+        return;
+      }
 
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "../build/three.module.js",
-					"three/addons/": "./jsm/"
-				}
-			}
-		</script>
+      let camera, scene, renderer;
+      let controller, reticle, cube = null, hitTestSource = null, hitTestRequested = false;
 
-		<script type="module">
+      init();
+      animate();
 
-			import * as THREE from 'three';
-			import { ARButton } from 'three/addons/webxr/ARButton.js';
+      function init() {
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.xr.enabled = true;
+        document.body.appendChild(renderer.domElement);
 
-			let container;
-			let camera, scene, renderer;
-			let controller1, controller2;
+        document.body.appendChild(
+          ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] })
+        );
 
-			let reticle;
+        controller = renderer.xr.getController(0);
+        controller.addEventListener("select", onSelect);
+        scene.add(controller);
 
-			let hitTestSource = null;
-			let hitTestSourceRequested = false;
+        reticle = new THREE.Mesh(
+          new THREE.RingGeometry(0.08, 0.1, 32).rotateX(-Math.PI / 2),
+          new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide })
+        );
+        reticle.matrixAutoUpdate = false;
+        reticle.visible = false;
+        scene.add(reticle);
 
-			init();
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(1, 3, 2);
+        scene.add(light);
 
-			function init() {
+        window.addEventListener("resize", onWindowResize, false);
+      }
 
-				container = document.createElement( 'div' );
-				document.body.appendChild( container );
+      function onSelect() {
+        if (reticle.visible) {
+          if (cube) scene.remove(cube);
+          cube = new THREE.Mesh(
+            new THREE.BoxGeometry(0.15, 0.15, 0.15),
+            new THREE.MeshPhongMaterial({ color: 0xff4444 })
+          );
+          cube.position.setFromMatrixPosition(reticle.matrix);
+          cube.quaternion.setFromRotationMatrix(reticle.matrix);
+          scene.add(cube);
+        }
+      }
 
-				scene = new THREE.Scene();
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
 
-				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 20 );
+      function animate() {
+        renderer.setAnimationLoop(render);
+      }
 
-				const light = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 3 );
-				light.position.set( 0.5, 1, 0.25 );
-				scene.add( light );
+      function render(timestamp, frame) {
+        if (frame) {
+          const referenceSpace = renderer.xr.getReferenceSpace();
+          const session = renderer.xr.getSession();
 
-				//
+          if (!hitTestRequested) {
+            session
+              .requestReferenceSpace("viewer")
+              .then((refSpace) => {
+                session
+                  .requestHitTestSource({ space: refSpace })
+                  .then((source) => {
+                    hitTestSource = source;
+                  });
+              });
+            session.addEventListener("end", () => {
+              hitTestRequested = false;
+              hitTestSource = null;
+            });
+            hitTestRequested = true;
+          }
 
-				renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.setAnimationLoop( animate );
-				renderer.xr.enabled = true;
-				container.appendChild( renderer.domElement );
-
-				//
-
-				document.body.appendChild( ARButton.createButton( renderer, { requiredFeatures: [ 'hit-test' ] } ) );
-
-				//
-
-				const geometry = new THREE.CylinderGeometry( 0.1, 0.1, 0.2, 32 ).translate( 0, 0.1, 0 );
-
-				function onSelect() {
-
-					if ( reticle.visible ) {
-
-						const material = new THREE.MeshPhongMaterial( { color: 0xffffff * Math.random() } );
-						const mesh = new THREE.Mesh( geometry, material );
-						reticle.matrix.decompose( mesh.position, mesh.quaternion, mesh.scale );
-						mesh.scale.y = Math.random() * 2 + 1;
-						scene.add( mesh );
-
-					}
-
-				}
-
-				controller1 = renderer.xr.getController( 0 );
-				controller1.addEventListener( 'select', onSelect );
-				scene.add( controller1 );
-
-				controller2 = renderer.xr.getController( 1 );
-				controller2.addEventListener( 'select', onSelect );
-				scene.add( controller2 );
-
-				reticle = new THREE.Mesh(
-					new THREE.RingGeometry( 0.15, 0.2, 32 ).rotateX( - Math.PI / 2 ),
-					new THREE.MeshBasicMaterial()
-				);
-				reticle.matrixAutoUpdate = false;
-				reticle.visible = false;
-				scene.add( reticle );
-
-				//
-
-				window.addEventListener( 'resize', onWindowResize );
-
-			}
-
-			function onWindowResize() {
-
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-			}
-
-			//
-
-			function animate( timestamp, frame ) {
-
-				if ( frame ) {
-
-					const referenceSpace = renderer.xr.getReferenceSpace();
-					const session = renderer.xr.getSession();
-
-					if ( hitTestSourceRequested === false ) {
-
-						session.requestReferenceSpace( 'viewer' ).then( function ( referenceSpace ) {
-
-							session.requestHitTestSource( { space: referenceSpace } ).then( function ( source ) {
-
-								hitTestSource = source;
-
-							} );
-
-						} );
-
-						session.addEventListener( 'end', function () {
-
-							hitTestSourceRequested = false;
-							hitTestSource = null;
-
-						} );
-
-						hitTestSourceRequested = true;
-
-					}
-
-					if ( hitTestSource ) {
-
-						const hitTestResults = frame.getHitTestResults( hitTestSource );
-
-						if ( hitTestResults.length ) {
-
-							const hit = hitTestResults[ 0 ];
-
-							reticle.visible = true;
-							reticle.matrix.fromArray( hit.getPose( referenceSpace ).transform.matrix );
-
-						} else {
-
-							reticle.visible = false;
-
-						}
-
-					}
-
-				}
-
-				renderer.render( scene, camera );
-
-			}
-
-		</script>
-	</body>
+          if (hitTestSource) {
+            const hitTestResults = frame.getHitTestResults(hitTestSource);
+            if (hitTestResults.length > 0) {
+              const hit = hitTestResults[0];
+              const pose = hit.getPose(referenceSpace);
+              reticle.visible = true;
+              reticle.matrix.fromArray(pose.transform.matrix);
+            } else {
+              reticle.visible = false;
+            }
+          }
+        }
+        renderer.render(scene, camera);
+      }
+    })();
+  </script>
+</body>
 </html>
