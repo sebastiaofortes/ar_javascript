@@ -92,6 +92,10 @@
 					// CLONA O MODELO PARA NÃO ALTERAR O ORIGINAL
 					const model = gltfModel.clone(true);
 
+					// AJUSTE DE ROTAÇÃO ANTES DE INSERIR
+    				// Exemplo: Rotacionar 90° no eixo Y (em radianos: Math.PI / 2)
+    				model.rotation.y += Math.PI / 2; // você pode ajustar X, Y ou Z
+
 					// ALINHA O MODELO COM O RETICLE
 					reticle.matrix.decompose(model.position, model.quaternion, model.scale);
 
