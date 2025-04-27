@@ -2,19 +2,17 @@
   <head>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <!-- Componente WebXR Hit Test para A-Frame -->
-    <script src="https://cdn.jsdelivr.net/npm/aframe-webxr-hit-test@1.0.0/dist/aframe-webxr-hit-test.min.js"></script>
+    <script src="https://unpkg.com/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+    <script src="https://unpkg.com/aframe-webxr-hit-test@1.0.0/dist/aframe-webxr-hit-test.min.js"></script>
   </head>
   <body style="margin: 0; overflow: hidden;">
     <a-scene
-      xrweb="allowedDevices: any"
-      webxr="requiredFeatures: hit-test;"
-      embedded
-      arjs="trackingMethod: best; sourceType: webcam;"
-      renderer="colorManagement: true;"
       vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
+      webxr="optionalFeatures: hit-test; overlay;"
+      renderer="colorManagement: true"
+      embedded
     >
-      <!-- Nosso cubo virtual, inicialmente invisível -->
+      <!-- Objeto virtual, invisível até o primeiro "hit" -->
       <a-box
         id="placed-cube"
         visible="false"
@@ -25,12 +23,17 @@
         position="0 0 0">
       </a-box>
 
-      <!-- Componente hit-test configurado para aparecer ao clicar/tocar -->
-      <a-entity
-        webxr-hit-test="target:#placed-cube; type: select;">
-      </a-entity>
+      <!-- É necessário uma entidade para "pegar" os eventos de hit-test -->
+      <a-entity 
+        webxr-hit-test="target:#placed-cube; type: select"
+      ></a-entity>
 
       <a-camera></a-camera>
     </a-scene>
+    <p style="position: absolute; top: 0; left: 0; color: #000; background: #fff; padding: 8px; z-index: 2">
+      Toque no botão AR no canto da tela para iniciar,<br>
+      aponte para uma superfície e toque para posicionar o cubo.<br>
+      <b>*Requer suporte AR do navegador/dispositivo.</b>
+    </p>
   </body>
 </html>
