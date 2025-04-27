@@ -103,7 +103,7 @@
 
 					// OPCIONAL: Ajuste escala do modelo ao seu gosto
 					model.scale.multiplyScalar(0.5);
-					
+
 					// salva no storage
 					saveObjects(myObjects);
 
@@ -200,13 +200,25 @@
 		}
 
 		function saveObjects(objectsArray) {
-			// Exemplo simples: só armazena posição, rotação (como Euler) e escala (como vetor)
-			const data = objectsArray.map(obj => ({
-				position: obj.position.toArray(),
-				rotation: obj.rotation.toArray(),
-				scale: obj.scale.toArray()
-			}));
-			localStorage.setItem('ar_objects', JSON.stringify(data));
+			try {
+				const data = objectsArray.map(obj => ({
+					position: obj.position.toArray(),
+					rotation: obj.rotation.toArray(),
+					scale: obj.scale.toArray()
+				}));
+				const jsonData = JSON.stringify(data);
+
+				// Faça o log no console
+				console.log("Salvando objetos:", jsonData);
+
+				// Tenta salvar no localStorage
+				localStorage.setItem('ar_objects', jsonData);
+			} catch (e) {
+				// Exibe o erro em um ALERT
+				alert('Erro ao salvar objetos: ' + e.message);
+				// E loga o erro no console para inspeção
+				console.error("Erro no saveObjects:", e);
+			}
 		}
 
 		function loadObjectsAndInsert(gltfModel) {
