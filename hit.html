@@ -1,39 +1,41 @@
+<!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8">
+    <title>A-Frame WebXR AR Hit Test Example</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <!-- Componente WebXR Hit Test para A-Frame -->
-    <script src="https://unpkg.com/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
-    <script src="https://unpkg.com/aframe-webxr-hit-test@1.0.0/dist/aframe-webxr-hit-test.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-webxr-hit-test@1.0.0/dist/aframe-webxr-hit-test.min.js"></script>
   </head>
   <body style="margin: 0; overflow: hidden;">
     <a-scene
+      webxr="optionalFeatures: hit-test;"
       vr-mode-ui="enabled: false"
-      webxr="optionalFeatures: hit-test; overlay;"
       renderer="colorManagement: true"
       embedded
     >
-      <!-- Objeto virtual, invisível até o primeiro "hit" -->
+      <a-camera></a-camera>
+
       <a-box
-        id="placed-cube"
+        id="target"
         visible="false"
         color="tomato"
         depth="0.2"
         height="0.2"
         width="0.2"
-        position="0 0 0">
-      </a-box>
+        position="0 0 0"
+      ></a-box>
 
-      <!-- É necessário uma entidade para "pegar" os eventos de hit-test -->
-      <a-entity 
-        webxr-hit-test="target:#placed-cube; type: select"
+      <a-entity
+        webxr-hit-test="target: #target; type: select"
       ></a-entity>
-
-      <a-camera></a-camera>
     </a-scene>
-    <p style="position: absolute; top: 0; left: 0; color: #000; background: #fff; padding: 8px; z-index: 2">
-      Toque no botão AR no canto da tela para iniciar,<br>
-      aponte para uma superfície e toque para posicionar o cubo.<br>
-      <b>*Requer suporte AR do navegador/dispositivo.</b>
-    </p>
+    <div style="position: absolute; top: 1em; left: 1em; color:black; background: #fff7; padding: 10px; border-radius: 8px; z-index: 1;">
+      <strong>Instruções:</strong>
+      <br>1. Use <b>Chrome Android</b> ou <b>Samsung Internet</b> com suporte WebXR AR.
+      <br>2. Quando abrir, <b>toque no botão [AR]</b> que aparece no canto.
+      <br>3. Aponte para uma superfície e <b>toque na tela</b> para posicionar o cubo.
+      <br><b>HTTPS obrigatório.</b>
+      <br><span style='color:red'>O botão [AR] <u>não</u> aparece em PC desktop!</span>
+    </div>
   </body>
 </html>
