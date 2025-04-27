@@ -25,10 +25,13 @@
 
 			import * as THREE from 'three';
 			import { ARButton } from 'three/addons/webxr/ARButton.js';
+			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 			let container;
 			let camera, scene, renderer;
 			let controller1, controller2;
+
+			let gltfModel = null; // Variavel que armazena o modelo gltf carregado
 
 			let reticle;
 
