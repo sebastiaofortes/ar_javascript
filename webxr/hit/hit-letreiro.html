@@ -51,7 +51,7 @@
 			// Estilo simples para o letreiro
 			ctx.fillStyle = "rgba(30,30,30,0.8)";
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
-			ctx.font = "bold 10px Arial";
+			ctx.font = "bold 12px Arial";
 			ctx.fillStyle = "#fff";
 			ctx.textAlign = "center";
 			ctx.textBaseline = "middle";
@@ -60,9 +60,23 @@
 			const texture = new THREE.CanvasTexture(canvas);
 			const spriteMaterial = new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false, transparent: true });
 			hudSprite = new THREE.Sprite(spriteMaterial);
-			hudSprite.scale.set(1.7, 0.4, 1); // tamanho do letreiro na tela (ajuste se necessário)
+			hudSprite.scale.set(0.8, 0.2, 0.5); // tamanho do letreiro na tela (ajuste se necessário)
 
 			scene.add(hudSprite);
+		}
+
+		function updateHUDText(texto) {
+			const canvas = hudSprite.material.map.image;
+			const ctx = canvas.getContext('2d');
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			ctx.fillStyle = "rgba(30,30,30,0.8)";
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			ctx.font = "bold 48px Arial";
+			ctx.fillStyle = "#fff";
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+			ctx.fillText(texto, canvas.width / 2, canvas.height / 2);
+			hudSprite.material.map.needsUpdate = true;
 		}
 
 		init();
