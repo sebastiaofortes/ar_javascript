@@ -33,8 +33,24 @@ window.onload = () => {
             latitude: -17.3657828, // Regis Bike
             longitude: -44.9644341,
             message: "Regis Bike"
+        },
+        {
+            latitude: -17.36047, // Casa de Mãe
+            longitude: -44.95944,
+            message: "Casa de Mãe"
+        },
+        {
+            latitude: -17.36348, // Drogaria Cristina
+            longitude: -44.96193,
+            message: "Drogaria Cristina"
+        },
+        {
+            latitude: -16.44206, // Mirage Hotel Porto Seguro
+            longitude: -39.06355,
+            message: "Mirage Hotel"
         }
     ];
+    
     const tolerance = 0.00016; // Aproximadamente 16 metros
 
     const el = document.querySelector("[gps-new-camera]");
@@ -87,13 +103,13 @@ window.onload = () => {
 
         // Se saiu do destino anterior
         if ((!foundTarget || foundIndex !== currentTargetIndex) && textEntity != null) {
-            alert('Você se afastou do destino anterior');
+            alert(`Você se afastou do destino anterior: ${userLat} e ${userLon}`);
             textEntity.parentNode.removeChild(textEntity);
             textEntity = null;
             currentTargetIndex = null;
         } 
         if (!foundTarget && !textEntity){
-            // alert('Você não está próximo de nenhum destino');
+            alert(`Você não está próximo de nenhum destino ${userLat} e ${userLon}`);
         }
     });
 };
