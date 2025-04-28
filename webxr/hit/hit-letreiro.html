@@ -231,15 +231,15 @@
 
 			}
 
-			if (hudSprite) {
-				// Calcula posição um pouco à frente da câmera (ex: 1m na frente)
-				camera.getWorldPosition(hudSprite.position);
-				camera.getWorldDirection(hudSprite.position);
-				hudSprite.position.copy(camera.position).add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(1.3));
-
+			// --- LETREIRO NO TOPO ---
+			if (typeof hudSprite !== 'undefined' && hudSprite) {
+				const ndc = new THREE.Vector3(0, 0.85, -1); // (centralizado, topo, perto)
+				ndc.unproject(camera);
+				hudSprite.position.copy(ndc);
 				// Faz o letreiro sempre "olhar" para a mesma direção que a câmera
 				hudSprite.quaternion.copy(camera.quaternion);
 			}
+
 
 			renderer.render(scene, camera);
 
