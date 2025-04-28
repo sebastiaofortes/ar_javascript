@@ -233,7 +233,7 @@
 
 			// --- LETREIRO NO TOPO ---
 			if (typeof hudSprite !== 'undefined' && hudSprite) {
-				const ndc = new THREE.Vector3(0, 0.85, -1); // (centralizado, topo, perto)
+				const ndc = new THREE.Vector3(0, 0.85, -10); // (centralizado, topo, perto)
 				ndc.unproject(camera);
 				hudSprite.position.copy(ndc);
 				// Faz o letreiro sempre "olhar" para a mesma direção que a câmera
