@@ -45,13 +45,13 @@
 
 		function createHUD(texto = "Meu Letreiro 3D AR!") {
 			const canvas = document.createElement('canvas');
-			canvas.width = 512; canvas.height = 128;
+			canvas.width = 128; canvas.height = 32;
 			const ctx = canvas.getContext('2d');
 
 			// Estilo simples para o letreiro
 			ctx.fillStyle = "rgba(30,30,30,0.8)";
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
-			ctx.font = "bold 48px Arial";
+			ctx.font = "bold 10px Arial";
 			ctx.fillStyle = "#fff";
 			ctx.textAlign = "center";
 			ctx.textBaseline = "middle";
