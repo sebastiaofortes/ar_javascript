@@ -28,6 +28,7 @@
 		import * as THREE from 'three';
 		import { ARButton } from 'three/addons/webxr/ARButton.js';
 		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+		import { clone } from 'three/addons/utils/SkeletonUtils.js';
 
 		let container;
 		let camera, scene, renderer;
@@ -95,24 +96,37 @@
 			// --------------------------------
 
 			function onSelect() {
+				// Exemplo: dentro da sua função onSelect()
 				if (reticle.visible && gltfModel) {
-					const model = gltfModel.clone(true);
-					reticle.matrix.decompose(model.position, model.quaternion, model.scale);
-					//model.rotation.y += Math.PI * 1.5;
-					model.scale.multiplyScalar(0.01);
+					const model = clone(gltfModel);
 
-					// animacões
-					if (gltfAnimations && gltfAnimations.length > 0) {
-						console.log('Inserindo animacòes');
-						const mixer = new THREE.AnimationMixer(model);
+					// Acha o primeiro SkinnedMesh (como você fez)
+					const skinnedMesh = findFirstSkinnedMesh(model);
+
+					reticle.matrix.decompose(model.position, model.quaternion, model.scale);
+					model.scale.multiplyScalar(0.3);
+
+					// animações!
+					if (gltfAnimations && gltfAnimations.length > 0 && skinnedMesh) {
+						console.log('objeto com animacões')
+						const mixer = new THREE.AnimationMixer(skinnedMesh);
 						const action = mixer.clipAction(gltfAnimations[0]);
 						action.play();
 						mixers.push(mixer);
 					}
-					// .animacões
 
 					scene.add(model);
 				}
+			}
+
+			// Função para encontrar o primeiro SkinnedMesh da hierarquia:
+			function findFirstSkinnedMesh(obj) {
+				if (obj.type === "SkinnedMesh") return obj;
+				for (let child of obj.children) {
+					const found = findFirstSkinnedMesh(child);
+					if (found) return found;
+				}
+				return null;
 			}
 
 			controller1 = renderer.xr.getController(0);
