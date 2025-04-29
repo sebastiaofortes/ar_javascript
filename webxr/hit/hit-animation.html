@@ -99,7 +99,7 @@
 					const model = gltfModel.clone(true);
 					reticle.matrix.decompose(model.position, model.quaternion, model.scale);
 					//model.rotation.y += Math.PI * 1.5;
-					model.scale.multiplyScalar(0.1);
+					model.scale.multiplyScalar(0.01);
 
 					// animacões
 					if (gltfAnimations && gltfAnimations.length > 0) {
@@ -197,15 +197,13 @@
 
 				}
 
-				// Atualize animações dos modelos
-				const delta = clock.getDelta();
-				for (let i = 0; i < mixers.length; i++) {
-					mixers[i].update(delta);
-				}
-
 			}
 
-
+			// Atualize animações dos modelos
+			const delta = clock.getDelta();
+			for (let i = 0; i < mixers.length; i++) {
+				mixers[i].update(delta);
+			}
 
 			renderer.render(scene, camera);
 
