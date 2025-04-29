@@ -104,7 +104,7 @@
 					const skinnedMesh = findFirstSkinnedMesh(model);
 
 					reticle.matrix.decompose(model.position, model.quaternion, model.scale);
-					model.scale.multiplyScalar(0.3);
+					model.scale.multiplyScalar(0.7);
 
 					// animações!
 					if (gltfAnimations && gltfAnimations.length > 0 && skinnedMesh) {
