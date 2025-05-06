@@ -17,58 +17,28 @@
     </a-scene>
 
     <script>
-        window.onload = () => {
+        window.onload = async () => {
             let boxAdded = false;
             let textEntity = null;
-            let currentTargetIndex = null; // Para saber qual destino estamos atualmente
+            let currentTargetIndex = null;
+            let targets = [];
 
-            // Array de destinos, você pode adicionar quantos quiser!
-            const targets = [
-                {
-                    latitude: -17.3675704,
-                    longitude: -44.9666925,
-                    message: "Meu escritório home Office!",
-                    tolerance: 0.00016 // ~16 metros
-                },
-                {
-                    latitude: -17.3787301,
-                    longitude: -44.9672247,
-                    message: "Supermercado BH",
-                    tolerance: 0.00032 // ~32 metros
-                },
-                {
-                    latitude: -17.3657828,
-                    longitude: -44.9644341,
-                    message: "Regis Bike",
-                    tolerance: 0.00020 // ~20 metros
-                },
-                {
-                    latitude: -17.36047,
-                    longitude: -44.95944,
-                    message: "Casa de Mãe",
-                    tolerance: 0.00032
-                },
-                {
-                    latitude: -17.36348,
-                    longitude: -44.96193,
-                    message: "Drogaria Cristina",
-                    tolerance: 0.00032
-                },
-                {
-                    latitude: -16.44206,
-                    longitude: -39.06355,
-                    message: "Mirage Hotel",
-                    tolerance: 0.00025
-                }
-            ];
+            try {
+                // Chamada para API que retorna os destinos
+                const response = await fetch('https://example.com/api/targets');
+                targets = await response.json(); // Espera resposta JSON no formato [{ latitude, longitude, message, tolerance }, ...]
+                console.log("Destinos carregados:", targets);
+            } catch (error) {
+                alert("Erro ao carregar destinos da API");
+                console.error(error);
+                return;
+            }
 
             const el = document.querySelector("[gps-new-camera]");
-
             el.addEventListener("gps-camera-update-position", e => {
                 const userLat = e.detail.position.latitude;
                 const userLon = e.detail.position.longitude;
 
-                // Adicionar caixa apenas uma vez
                 if (!boxAdded) {
                     const entity = document.createElement("a-box");
                     entity.setAttribute("scale", { x: 20, y: 20, z: 20 });
@@ -81,12 +51,12 @@
                     boxAdded = true;
                 }
 
-                // Verifica se está perto de algum destino
                 let foundTarget = null;
                 let foundIndex = null;
                 for (let i = 0; i < targets.length; i++) {
                     const t = targets[i];
-                    const isNear = Math.abs(userLat - t.latitude) < t.tolerance && Math.abs(userLon - t.longitude) < t.tolerance;
+                    const isNear = Math.abs(userLat - t.latitude) < t.tolerance &&
+                        Math.abs(userLon - t.longitude) < t.tolerance;
 
                     if (isNear) {
                         foundTarget = t;
@@ -96,7 +66,6 @@
                 }
 
                 if (foundTarget && textEntity == null) {
-                    // Entrou em um destino
                     alert(`Usuário chegou: ${foundTarget.message}`);
                     textEntity = document.createElement("a-text");
                     textEntity.setAttribute("value", foundTarget.message);
@@ -110,19 +79,20 @@
                     currentTargetIndex = foundIndex;
                 }
 
-                // Se saiu do destino anterior
                 if ((!foundTarget || foundIndex !== currentTargetIndex) && textEntity != null) {
                     alert(`Você se afastou do destino anterior: ${userLat} e ${userLon}`);
                     textEntity.parentNode.removeChild(textEntity);
                     textEntity = null;
                     currentTargetIndex = null;
                 }
+
                 if (!foundTarget && !textEntity) {
                     alert(`Você não está próximo de nenhum destino ${userLat} e ${userLon}`);
                 }
             });
         };
     </script>
+
 </body>
 
 </html>
