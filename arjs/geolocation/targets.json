@@ -1,0 +1,39 @@
+[
+    {
+      "latitude": -17.3675704,
+      "longitude": -44.9666925,
+      "message": "Quarto de trabalho!",
+      "tolerance": 0.00020
+    },
+    {
+      "latitude": -17.3787301,
+      "longitude": -44.9672247,
+      "message": "Supermercado BH",
+      "tolerance": 0.00040
+    },
+    {
+      "latitude": -17.3657828,
+      "longitude": -44.9644341,
+      "message": "Regis Bike",
+      "tolerance": 0.00030
+    },
+    {
+      "latitude": -17.36047,
+      "longitude": -44.95944,
+      "message": "Casa de Mãe",
+      "tolerance": 0.00040
+    },
+    {
+      "latitude": -17.36348,
+      "longitude": -44.96193,
+      "message": "Drogaria Cristina",
+      "tolerance": 0.00020
+    },
+    {
+      "latitude": -16.44206,
+      "longitude": -39.06355,
+      "message": "Mirage Hotel",
+      "tolerance": 0.00050
+    }
+  ]
+  
