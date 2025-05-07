@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <title>AR Mobile Responsivo - Traseira com Fallback</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <style>
+    html, body {
+      margin: 0; padding: 0; overflow: hidden;
+      width: 100vw; height: 100vh;
+      touch-action: none;
+      background: #111;
+    }
+    #bg-video {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      min-width: 100vw; min-height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+      transform: scaleX(-1);
+      background: black;
+      pointer-events: none;
+    }
+    a-scene {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 1;
+      background: transparent !important;
+      pointer-events: none;
+      touch-action: none;
+    }
+    #gestureInfo {
+      position: fixed;
+      top: 2vh; left: 0; width: 100vw;
+      color: #00ffd7;
+      text-align: center;
+      font-size: 5vw;
+      font-family: system-ui, sans-serif;
+      text-shadow: #02484c 2px 2px 6px;
+      user-select: none;
+      z-index: 2;
+      pointer-events: none;
+      line-height: 1.3;
+    }
+    @media (orientation: portrait) {
+      #gestureInfo { font-size: 7vw; }
+    }
+    @media (max-width: 600px) {
+      #gestureInfo { font-size: 8vw; }
+    }
+  </style>
+</head>
+<body>
+  <video id="bg-video" autoplay playsinline muted></video>
+  <div id="gestureInfo"></div>
+  <a-scene embedded renderer="alpha:true;antialias:true">
+    <a-box id="hand-box" visible="false" depth="0.19" height="0.19" width="0.19" color="deepskyblue"></a-box>
+    <a-entity camera></a-entity>
+  </a-scene>
+  <script>
+    const handBox = document.getElementById('hand-box');
+    const gestureDiv = document.getElementById('gestureInfo');
+    const videoElement = document.getElementById('bg-video');
+    let lastGesture = '';
+
+    function responsiveScale() {
+      const baseWidth = window.innerWidth > window.innerHeight ? 4 : 3;
+      const baseHeight = window.innerHeight > window.innerWidth ? 3.5 : 2.2;
+      return { width: baseWidth, height: baseHeight };
+    }
+
+    // Detecta mão aberta
+    function isHandOpen(landmarks) {
+      if (!landmarks) return false;
+      const dx = landmarks[8].x - landmarks[4].x;
+      const dy = landmarks[8].y - landmarks[4].y;
+      const dz = landmarks[8].z - landmarks[4].z;
+      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      return dist > 0.15;
+    }
+
+    function onResults(results) {
+      const scale = responsiveScale();
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0];
+
+        if (isHandOpen(landmarks)) {
+          if (lastGesture !== 'open') {
+            lastGesture = 'open';
+            gestureDiv.textContent = 'Mão aberta';
+          }
+          handBox.setAttribute('visible', true);
+
+          // Move cubo para a palma (landmark 0)
+          const palm = landmarks[0];
+          const x = (palm.x - 0.5) * scale.width;
+          const y = -(palm.y - 0.5) * scale.height;
+          handBox.setAttribute('position', { x: x, y: y + 1.5, z: -3.2 });
+        } else {
+          gestureDiv.textContent = '';
+          handBox.setAttribute('visible', false);
+          lastGesture = '';
+        }
+      } else {
+        handBox.setAttribute('visible', false);
+        gestureDiv.textContent = '';
+        lastGesture = '';
+      }
+    }
+
+    // MediaPipe
+    const hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+    });
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.7
+    });
+    hands.onResults(onResults);
+
+    // Recebe qualquer elemento de vídeo para análise:
+    function loopAnalyzeFrames() {
+      async function onFrame() {
+        if (videoElement.readyState >= 2) { // vídeo suficientemente carregado
+          await hands.send({ image: videoElement });
+        }
+        requestAnimationFrame(onFrame);
+      }
+      onFrame();
+    }
+
+    // Tenta câmera traseira, se falhar vai para frontal automaticamente
+    async function startPreferredCamera() {
+      gestureDiv.textContent = "Abrindo câmera traseira...";
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { exact: "environment" } },
+          audio: false
+        });
+        gestureDiv.textContent = "Câmera traseira ativada! Abra a mão.";
+        videoElement.srcObject = stream;
+        videoElement.onloadedmetadata = loopAnalyzeFrames;
+        videoElement.play();
+      } catch(e) {
+        // fallback: usa frontal
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user" },
+            audio: false
+          });
+          gestureDiv.textContent = "Usando câmera frontal. Abra a mão!";
+          videoElement.srcObject = stream;
+          videoElement.onloadedmetadata = loopAnalyzeFrames;
+          videoElement.play();
+        } catch(e2) {
+          gestureDiv.textContent = "Não foi possível acessar nenhuma câmera.";
+        }
+      }
+    }
+
+    // Touch para liberar câmera no mobile
+    function unlockCameraOnMobile() {
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile) {
+        window.addEventListener('touchend', () => {
+          startPreferredCamera();
+        }, { once: true });
+        gestureDiv.textContent = "Toque para ativar a câmera traseira!";
+      } else {
+        startPreferredCamera();
+      }
+    }
+    unlockCameraOnMobile();
+  </script>
+</body>
+</html>
