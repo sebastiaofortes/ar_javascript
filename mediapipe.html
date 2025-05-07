@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>AFrame + MediaPipe Hands + Camera Background</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <style>
+      body {
+        margin: 0; padding: 0; overflow: hidden;
+      }
+      #bg-video {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        object-fit: cover;
+        z-index: 0;
+        /* Espelha horizontalmente para dar experiência “espelho” */
+        transform: scaleX(-1);
+      }
+      a-scene {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        z-index: 1;
+        background: transparent !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Webcam background video -->
+    <video id="bg-video" autoplay playsinline muted></video>
+
+    <!-- A-Frame VR Scene -->
+    <a-scene>
+      <a-box id="hand-box" position="0 1.5 -4" color="#EF2D5E"></a-box>
+      <a-entity camera look-controls></a-entity>
+      <!-- Não coloque a-sky, pois cobre tudo -->
+    </a-scene>
+
+    <script>
+      // Set up A-Frame box reference
+      const handBox = document.getElementById('hand-box');
+      // Reference video for both BG and mediapipe input
+      const videoElement = document.getElementById('bg-video');
+
+      // Callback to handle MediaPipe results
+      function onResults(results) {
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+          const hand = results.multiHandLandmarks[0];
+          const palm = hand[0]; // Wrist/palm landmark
+
+          // Coords are normalized [0,1] - map to 3D
+          const x = (palm.x - 0.5) * 4;
+          const y = -(palm.y - 0.5) * 3;
+          handBox.setAttribute('position', { x: x, y: y + 1.5, z: -4 });
+        }
+      }
+
+      // Setup MediaPipe
+      const hands = new Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+      });
+      hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 0,
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.6
+      });
+      hands.onResults(onResults);
+
+      // Setup camera capture
+      // Use the same video element for display and for MediaPipe
+      const camera = new Camera(videoElement, {
+        onFrame: async () => { await hands.send({ image: videoElement }); },
+        width: 640,
+        height: 480
+      });
+      camera.start();
+    </script>
+  </body>
+</html>
