@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <title>AR - Dedo Toca Cubo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 0;
+            background: black;
+            pointer-events: none;
+            transform: scaleX(-1);
+        }
+
+        a-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            background: transparent !important;
+        }
+
+        #gestureInfo {
+            position: fixed;
+            top: 2vh;
+            left: 0;
+            width: 100vw;
+            color: #00ffd7;
+            text-align: center;
+            font-size: 7vw;
+            text-shadow: #02484c 2px 2px 6px;
+            font-family: system-ui, sans-serif;
+            user-select: none;
+            pointer-events: none;
+            z-index: 2;
+        }
+    </style>
+</head>
+
+<body>
+    <video id="bg-video" autoplay playsinline muted></video>
+    <div id="gestureInfo"></div>
+    <a-scene embedded renderer="alpha:true;antialias:true">
+        <!-- Cubo central (posição fixa) -->
+        <a-box id="center-cube" color="deepskyblue" depth="0.25" height="0.25" width="0.25" position="0 1.5 -3"></a-box>
+        <!-- Opcional: marcador para palma da mão do usuário -->
+        <a-sphere id="hand-sphere" radius="0.07" color="#ff27ae" visible="false"></a-sphere>
+        <a-entity camera></a-entity>
+    </a-scene>
+    <script>
+        const gestureDiv = document.getElementById('gestureInfo');
+        const videoElement = document.getElementById('bg-video');
+        const cube = document.getElementById('center-cube');
+        const handSphere = document.getElementById('hand-sphere');
+
+        // Posição fixa (coerente com A-Frame) do cubo
+        const cubePos = { x: 0, y: 1.5, z: -3 };
+        // Tamanho virtual do cubo, precisão de posicionamento da mão em relação ao cubo
+        const cubeWidth = 0.75, cubeHeight = 0.75;
+
+        // Normaliza o X/Y da mão (MediaPipe: 0~1), para nosso espaço de AR do cubo
+        function screenToSceneCoords(x, y) {
+            // Inverter X se video está espelhado (scaleX -1)
+            x = 1 - x;
+            // Assume A-Frame camera está com FOV padrão e cenário fixo, cubo em z = -3
+            // width: 4, height: 3.5 para o painel
+            const width = 4, height = 3.5;
+            const x3d = (x - 0.5) * width;
+            const y3d = -(y - 0.5) * height;
+            const z3d = -3;
+            return { x: x3d, y: y3d + 1.5, z: z3d }; // ajuste y para ficar na altura do cubo
+        }
+
+        function isPalmOverCube(palm) {
+            // Converte x,y normalizados para "mundo 3D"
+            const hand3d = screenToSceneCoords(palm.x, palm.y);
+
+            // Coincidência em X/Y (z fixo)
+            const inX = Math.abs(hand3d.x - cubePos.x) < cubeWidth / 2;
+            const inY = Math.abs(hand3d.y - cubePos.y) < cubeHeight / 2;
+            return inX && inY;
+        }
+
+        function onResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const palm = results.multiHandLandmarks[0][0]; // landmark 0 (palma)
+                const hand3d = screenToSceneCoords(palm.x, palm.y);
+
+                // Atualiza marcador visual da palma
+                handSphere.setAttribute('visible', true);
+                handSphere.setAttribute('position', hand3d);
+
+                // Detecta "colisão" sobre o cubo central
+                if (isPalmOverCube(palm)) {
+                    cube.setAttribute('color', 'gold');
+                    gestureDiv.textContent = "Mão SOBRE o cubo!";
+                } else {
+                    cube.setAttribute('color', 'deepskyblue');
+                    gestureDiv.textContent = "";
+                }
+            } else {
+                handSphere.setAttribute('visible', false);
+                cube.setAttribute('color', 'deepskyblue');
+                gestureDiv.textContent = "";
+            }
+        }
+
+        // =================== Igual ao seu código para MediaPipe + vídeo/camera ================
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+        });
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 0,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.7
+        });
+        hands.onResults(onResults);
+
+        function loopAnalyzeFrames() {
+            async function onFrame() {
+                if (videoElement.readyState >= 2) await hands.send({ image: videoElement });
+                requestAnimationFrame(onFrame);
+            }
+            onFrame();
+        }
+
+        // Tenta câmera traseira, fallback, etc.
+        async function startPreferredCamera() {
+            gestureDiv.textContent = "Abrindo câmera traseira...";
+            let stream;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { exact: "environment" } },
+                    audio: false
+                });
+                gestureDiv.textContent = "Câmera traseira ativada!";
+                videoElement.srcObject = stream;
+                videoElement.onloadedmetadata = loopAnalyzeFrames;
+                videoElement.play();
+            } catch (e) {
+                // fallback: usa frontal
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: "user" },
+                        audio: false
+                    });
+                    gestureDiv.textContent = "Usando câmera frontal!";
+                    videoElement.srcObject = stream;
+                    videoElement.onloadedmetadata = loopAnalyzeFrames;
+                    videoElement.play();
+                } catch (e2) {
+                    gestureDiv.textContent = "Não foi possível acessar nenhuma câmera.";
+                }
+            }
+        }
+
+        function unlockCameraOnMobile() {
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (isMobile) {
+                window.addEventListener('touchend', () => { startPreferredCamera(); }, { once: true });
+                gestureDiv.textContent = "Toque para ativar a câmera!";
+            } else {
+                startPreferredCamera();
+            }
+        }
+        unlockCameraOnMobile();
+        // ======================================================================================
+    </script>
+</body>
+
+</html>
