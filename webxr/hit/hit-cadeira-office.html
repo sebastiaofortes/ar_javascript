@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>three.js ar - hit test</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<link type="text/css" rel="stylesheet" href="main.css">
+</head>
+
+<body>
+
+	<div id="info">
+		<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> ar - hit test<br />
+	</div>
+
+	<script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
+
+	<script type="module">
+
+		import * as THREE from 'three';
+		import { ARButton } from 'three/addons/webxr/ARButton.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+		import { clone } from 'three/addons/utils/SkeletonUtils.js';
+
+		let container;
+		let camera, scene, renderer;
+		let controller1, controller2;
+
+		let gltfModel = null; // Variavel que armazena o modelo gltf carregado
+
+		// carregar animacões
+		let mixers = [];
+		let clock = new THREE.Clock();
+		let gltfAnimations = null;
+		// .carregar animacões
+
+		let reticle;
+
+		let hitTestSource = null;
+		let hitTestSourceRequested = false;
+
+		init();
+
+		function init() {
+
+			container = document.createElement('div');
+			document.body.appendChild(container);
+
+			scene = new THREE.Scene();
+
+			camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+
+			const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 3);
+			light.position.set(0.5, 1, 0.25);
+			scene.add(light);
+
+			//
+
+			renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setAnimationLoop(animate);
+			renderer.xr.enabled = true;
+			container.appendChild(renderer.domElement);
+
+			//
+
+			document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
+
+			//
+
+			const geometry = new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32).translate(0, 0.1, 0);
+
+			// --- CARREGAR O MODELO GLTF ---
+			const loader = new GLTFLoader();
+			loader.load(
+				'models/cadeira-office.glb', // caminho para seu arquivo GLB
+				function (gltf) {
+					gltfModel = gltf.scene;
+					gltfAnimations = gltf.animations;
+				},
+				undefined,
+				function (error) {
+					console.error('Erro ao carregar modelo:', error);
+				}
+			);
+
+			// --------------------------------
+
+			function onSelect() {
+				// Exemplo: dentro da sua função onSelect()
+				if (reticle.visible && gltfModel) {
+					const model = clone(gltfModel);
+
+					// Acha o primeiro SkinnedMesh (como você fez)
+					const skinnedMesh = findFirstSkinnedMesh(model);
+
+					reticle.matrix.decompose(model.position, model.quaternion, model.scale);
+					model.scale.multiplyScalar(1);
+
+					// animações!
+					if (gltfAnimations && gltfAnimations.length > 0 && skinnedMesh) {
+						console.log('objeto com animacões')
+						const mixer = new THREE.AnimationMixer(skinnedMesh);
+						const action = mixer.clipAction(gltfAnimations[0]);
+						action.play();
+						mixers.push(mixer);
+					}
+
+					scene.add(model);
+				}
+			}
+
+			// Função para encontrar o primeiro SkinnedMesh da hierarquia:
+			function findFirstSkinnedMesh(obj) {
+				if (obj.type === "SkinnedMesh") return obj;
+				for (let child of obj.children) {
+					const found = findFirstSkinnedMesh(child);
+					if (found) return found;
+				}
+				return null;
+			}
+
+			controller1 = renderer.xr.getController(0);
+			controller1.addEventListener('select', onSelect);
+			scene.add(controller1);
+
+			controller2 = renderer.xr.getController(1);
+			controller2.addEventListener('select', onSelect);
+			scene.add(controller2);
+
+			reticle = new THREE.Mesh(
+				new THREE.RingGeometry(0.15, 0.2, 32).rotateX(- Math.PI / 2),
+				new THREE.MeshBasicMaterial()
+			);
+			reticle.matrixAutoUpdate = false;
+			reticle.visible = false;
+			scene.add(reticle);
+
+			//
+
+			window.addEventListener('resize', onWindowResize);
+
+		}
+
+		function onWindowResize() {
+
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+		}
+
+		//
+
+		function animate(timestamp, frame) {
+
+			if (frame) {
+
+				const referenceSpace = renderer.xr.getReferenceSpace();
+				const session = renderer.xr.getSession();
+
+				if (hitTestSourceRequested === false) {
+
+					session.requestReferenceSpace('viewer').then(function (referenceSpace) {
+
+						session.requestHitTestSource({ space: referenceSpace }).then(function (source) {
+
+							hitTestSource = source;
+
+						});
+
+					});
+
+					session.addEventListener('end', function () {
+
+						hitTestSourceRequested = false;
+						hitTestSource = null;
+
+					});
+
+					hitTestSourceRequested = true;
+
+				}
+
+				if (hitTestSource) {
+
+					const hitTestResults = frame.getHitTestResults(hitTestSource);
+
+					if (hitTestResults.length) {
+
+						const hit = hitTestResults[0];
+
+						reticle.visible = true;
+						reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
+
+					} else {
+
+						reticle.visible = false;
+
+					}
+
+				}
+
+			}
+
+			// Atualize animações dos modelos
+			const delta = clock.getDelta();
+			for (let i = 0; i < mixers.length; i++) {
+				mixers[i].update(delta);
+			}
+
+			renderer.render(scene, camera);
+
+		}
+
+	</script>
+</body>
+
+</html>
