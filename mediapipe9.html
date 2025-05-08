@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>AR - Modelo GLB Na Mão Aberta</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <style>
+        html, body { margin:0; padding:0; width:100vw; height:100vh; overflow:hidden; }
+        #bg-video { position:fixed; top:0; left:0; width:100vw; height:100vh; object-fit:cover; z-index:0; background:black; pointer-events:none; transform: scaleX(-1);}
+        a-scene { position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:1; background:transparent !important; }
+        #gestureInfo { position:fixed; top:2vh; left:0; width:100vw; color:#00ffd7; text-align:center; font-size:7vw; text-shadow:#02484c 2px 2px 6px; font-family:system-ui,sans-serif; user-select:none; pointer-events:none; z-index:2;}
+    </style>
+</head>
+<body>
+<video id="bg-video" autoplay playsinline muted></video>
+<div id="gestureInfo"></div>
+<a-scene embedded renderer="alpha:true;antialias:true">
+    <a-assets>
+      <!-- Substitua 'modelo.glb' pelo caminho do seu arquivo GLB -->
+      <a-asset-item id="o-glb" src="go_gopher.glb"></a-asset-item>
+    </a-assets>
+    <a-entity id="hand-model" visible="false" gltf-model="#o-glb"></a-entity>
+    <a-entity camera></a-entity>
+</a-scene>
+<script>
+const gestureDiv = document.getElementById('gestureInfo');
+const videoElement = document.getElementById('bg-video');
+const handModel = document.getElementById('hand-model');
+
+// Função para converter as landmarks da mão (MediaPipe) para a cena 3D:
+function screenToSceneCoords(x, y) {
+    x = 1 - x;
+    const width = 4, height = 3.5;
+    const x3d = (x - 0.5) * width;
+    const y3d = -(y - 0.5) * height + 1;
+    const z3d = -3;
+    return {x: x3d, y: y3d, z: z3d};
+}
+
+// Função de detecção de mão aberta (simplificada)
+function isHandOpen(landmarks) {
+    if (!landmarks || landmarks.length !== 21) return false;
+    function estendido(palma, base, ponta) {
+        const distBase = Math.hypot(base.x-palma.x, base.y-palma.y);
+        const distPonta = Math.hypot(ponta.x-palma.x, ponta.y-palma.y);
+        return distPonta > distBase * 1.2;
+    }
+    const palma = landmarks[0];
+    let abertos = 0;
+    for(const [base, tip] of [[5,8],[9,12],[13,16],[17,20]]) {
+        if(estendido(palma, landmarks[base], landmarks[tip])) abertos++;
+    }
+    return abertos >= 3;
+}
+
+function onResults(results) {
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0];
+        if (isHandOpen(landmarks)) {
+            const palm = landmarks[0];
+            const hand3d = screenToSceneCoords(palm.x, palm.y);
+            handModel.setAttribute('visible', true);
+            handModel.setAttribute('position', hand3d);
+            handModel.setAttribute('scale', '0.50 0.50 0.50'); // ajuste conforme necessidades/ tamanho do modelo
+            gestureDiv.textContent = "Mão aberta!";
+        } else {
+            handModel.setAttribute('visible', false);
+            gestureDiv.textContent = "Mostre a mão aberta!";
+        }
+    } else {
+        handModel.setAttribute('visible', false);
+        gestureDiv.textContent = "Mostre a mão!";
+    }
+}
+
+// MediaPipe Hands config
+const hands = new Hands({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+});
+hands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 0,
+    minDetectionConfidence: 0.7,
+    minTrackingConfidence: 0.7
+});
+hands.onResults(onResults);
+
+function loopAnalyzeFrames() {
+    async function onFrame() {
+        if (videoElement.readyState >= 2)
+            await hands.send({ image: videoElement });
+        requestAnimationFrame(onFrame);
+    }
+    onFrame();
+}
+
+async function startPreferredCamera() {
+    gestureDiv.textContent = "Abrindo câmera traseira...";
+    let stream;
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { exact: "environment" } },
+            audio: false
+        });
+        gestureDiv.textContent = "Câmera traseira ativada!";
+        videoElement.srcObject = stream;
+        videoElement.onloadedmetadata = loopAnalyzeFrames;
+        videoElement.play();
+    } catch (e) {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "user" },
+                audio: false
+            });
+            gestureDiv.textContent = "Usando câmera frontal!";
+            videoElement.srcObject = stream;
+            videoElement.onloadedmetadata = loopAnalyzeFrames;
+            videoElement.play();
+        } catch (e2) {
+            gestureDiv.textContent = "Não foi possível acessar nenhuma câmera.";
+        }
+    }
+}
+function unlockCameraOnMobile() {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+        window.addEventListener('touchend', () => { startPreferredCamera(); }, { once: true });
+        gestureDiv.textContent = "Toque para ativar a câmera!";
+    } else {
+        startPreferredCamera();
+    }
+}
+unlockCameraOnMobile();
+</script>
+</body>
+</html>
