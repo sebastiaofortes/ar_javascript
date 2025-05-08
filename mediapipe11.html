@@ -72,11 +72,10 @@
         <a-assets>
             <!-- Troque pelo seu arquivo .glb -->
             <video id="bg-video" autoplay playsinline muted webkit-playsinline crossorigin="anonymous"></video>
-            <a-asset-item id="o-glb" src="golang.glb"></a-asset-item>
+            <a-asset-item id="o-glb" src="go_gopher.glb"></a-asset-item>
         </a-assets>
         <a-video src="#bg-video" position="0 0 -3" rotation="0 0 0" id="video-bg" crossorigin="anonymous"></a-video>
         <a-entity id="hand-model" visible="false" gltf-model="#o-glb"></a-entity>
-        <a-entity id="hand-model" visible="true" position="0 -1 0" gltf-model="#o-glb"></a-entity>
         <a-entity camera></a-entity>
     </a-scene>
     <script>
