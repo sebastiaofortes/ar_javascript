@@ -1,15 +1,46 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <title>AR - Modelo GLB Na Mão Aberta c/ Foto</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
     <style>
-        html, body { margin:0; padding:0; width:100vw; height:100vh; overflow:hidden; }
-        #bg-video { position:fixed; top:0; left:0; width:100vw; height:100vh; object-fit:cover; z-index:0; background:black; pointer-events:none; transform: scaleX(-1);}
-        a-scene { position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:1; background:transparent !important; }
-        #gestureInfo { position:fixed; top:2vh; left:0; width:100vw; color:#00ffd7; text-align:center; font-size:7vw; text-shadow:#02484c 2px 2px 6px; font-family:system-ui,sans-serif; user-select:none; pointer-events:none; z-index:2;}
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        a-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            background: transparent !important;
+        }
+
+        #gestureInfo {
+            position: fixed;
+            top: 2vh;
+            left: 0;
+            width: 100vw;
+            color: #00ffd7;
+            text-align: center;
+            font-size: 7vw;
+            text-shadow: #02484c 2px 2px 6px;
+            font-family: system-ui, sans-serif;
+            user-select: none;
+            pointer-events: none;
+            z-index: 2;
+        }
+
         #snapshot-btn {
             position: fixed;
             bottom: 6vh;
@@ -17,7 +48,7 @@
             transform: translateX(-50%);
             z-index: 10;
             font-size: 5vw;
-            background: rgba(255,255,255,0.92);
+            background: rgba(255, 255, 255, 0.92);
             color: #0d5757;
             border: none;
             border-radius: 24px;
@@ -27,164 +58,214 @@
             cursor: pointer;
             display: none;
         }
+
         #snapshot-btn:active {
-            background:#ffe440;
+            background: #ffe440;
         }
     </style>
 </head>
+
 <body>
-<video id="bg-video" autoplay playsinline muted></video>
-<div id="gestureInfo"></div>
-<button id="snapshot-btn">📸 Tirar Foto</button>
-<a-scene embedded renderer="alpha:true;antialias:true;preserveDrawingBuffer:true" id="aframeScene">
-    <a-assets>
-        <!-- Troque pelo seu arquivo .glb -->
-        <a-asset-item id="o-glb" src="go_gopher.glb"></a-asset-item>
-    </a-assets>
-    <a-entity id="hand-model" visible="false" gltf-model="#o-glb"></a-entity>
-    <a-entity camera></a-entity>
-</a-scene>
-<script>
-const gestureDiv = document.getElementById('gestureInfo');
-const videoElement = document.getElementById('bg-video');
-const handModel = document.getElementById('hand-model');
-const snapshotBtn = document.getElementById('snapshot-btn');
-const aframeScene = document.querySelector('a-scene');
+    <div id="gestureInfo"></div>
+    <button id="snapshot-btn">📸 Tirar Foto</button>
+    <a-scene embedded renderer="alpha:true;antialias:true;" id="aframeScene">
+        <a-assets>
+            <!-- Troque pelo seu arquivo .glb -->
+            <video id="bg-video" autoplay playsinline muted webkit-playsinline crossorigin="anonymous"></video>
+            <a-asset-item id="o-glb" src="golang.glb"></a-asset-item>
+        </a-assets>
+        <a-video src="#bg-video" position="0 0 -3" rotation="0 0 0" id="video-bg" crossorigin="anonymous"></a-video>
+        <a-entity id="hand-model" visible="false" gltf-model="#o-glb"></a-entity>
+        <a-entity id="hand-model" visible="true" position="0 -1 0" gltf-model="#o-glb"></a-entity>
+        <a-entity camera></a-entity>
+    </a-scene>
+    <script>
+        // Função para ajustar tamanho do <a-video> após a cena carregar
+        function resizeAVideoToCoverScreen() {
+            const scene = document.querySelector('a-scene');
+            const videoBG = document.getElementById('video-bg');
+            // Pode não estar disponível nos primeiros ms após carregamento
+            if (!scene.camera) return;
 
-// Utilidade para converter as landmarks da mão (MediaPipe) para a cena 3D:
-function screenToSceneCoords(x, y) {
-    x = 1 - x;
-    const width = 4, height = 3.5;
-    const x3d = (x - 0.5) * width;
-    const y3d = -(y - 0.5) * height + 1;
-    const z3d = -3;
-    return {x: x3d, y: y3d, z: z3d};
-}
+            // Parâmetros da câmera padrão do A-Frame
+            const fov = THREE.MathUtils.degToRad(scene.camera.fov || 80); // fov vertical padrão
+            const z = Math.abs(parseFloat(videoBG.getAttribute('position').z) || 3);
 
-// Função de detecção de mão aberta (simplificada)
-function isHandOpen(landmarks) {
-    if (!landmarks || landmarks.length !== 21) return false;
-    function estendido(palma, base, ponta) {
-        const distBase = Math.hypot(base.x-palma.x, base.y-palma.y);
-        const distPonta = Math.hypot(ponta.x-palma.x, ponta.y-palma.y);
-        return distPonta > distBase * 1.2;
-    }
-    const palma = landmarks[0];
-    let abertos = 0;
-    for(const [base, tip] of [[5,8],[9,12],[13,16],[17,20]]) {
-        if(estendido(palma, landmarks[base], landmarks[tip])) abertos++;
-    }
-    return abertos >= 3;
-}
+            // Aspect ratio atual da janela
+            const ar = window.innerWidth / window.innerHeight;
 
-// Só mostra botão quando GLB aparecer
-function showSnapshotButton(show=true){
-    snapshotBtn.style.display = show ? 'block' : 'none';
-}
+            // Altura que cobre toda a tela dado FOV e Z
+            const height = 2 * z * Math.tan(fov / 2);
+            const width = height * ar;
 
-// Lida com o frame do MediaPipe
-function onResults(results) {
-    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        const landmarks = results.multiHandLandmarks[0];
-        if (isHandOpen(landmarks)) {
-            const palm = landmarks[0];
-            const hand3d = screenToSceneCoords(palm.x, palm.y);
-            handModel.setAttribute('visible', true);
-            handModel.setAttribute('position', hand3d);
-            handModel.setAttribute('scale', '0.15 0.15 0.15');
-            gestureDiv.textContent = "Mão aberta!";
-            showSnapshotButton(true);
-        } else {
-            handModel.setAttribute('visible', false);
-            gestureDiv.textContent = "Mostre a mão aberta!";
-            showSnapshotButton(false);
+            videoBG.setAttribute('width', width);
+            videoBG.setAttribute('height', height);
         }
-    } else {
-        handModel.setAttribute('visible', false);
-        gestureDiv.textContent = "Mostre a mão!";
-        showSnapshotButton(false);
-    }
-}
 
-// MediaPipe Hands config
-const hands = new Hands({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
-});
-hands.setOptions({
-    maxNumHands: 1,
-    modelComplexity: 0,
-    minDetectionConfidence: 0.7,
-    minTrackingConfidence: 0.7
-});
-hands.onResults(onResults);
+        window.addEventListener("resize", resizeAVideoToCoverScreen);
+        // Opcional: também após 'loaded' da cena
+        document.querySelector('a-scene').addEventListener('loaded', resizeAVideoToCoverScreen);
 
-function loopAnalyzeFrames() {
-    async function onFrame() {
-        if (videoElement.readyState >= 2)
-            await hands.send({ image: videoElement });
-        requestAnimationFrame(onFrame);
-    }
-    onFrame();
-}
+        const gestureDiv = document.getElementById('gestureInfo');
+        const videoElement = document.getElementById('bg-video');
+        const handModel = document.getElementById('hand-model');
+        const snapshotBtn = document.getElementById('snapshot-btn');
+        const aframeScene = document.querySelector('a-scene');
 
-// Abertura de câmera (igual ao original)
-async function startPreferredCamera() {
-    gestureDiv.textContent = "Abrindo câmera traseira...";
-    let stream;
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { exact: "environment" } },
-            audio: false
+        // Utilidade para converter as landmarks da mão (MediaPipe) para a cena 3D:
+        function screenToSceneCoords(x, y) {
+            x = 1 - x;
+            const width = 4, height = 3.5;
+            const x3d = (x - 0.5) * width;
+            const y3d = -(y - 0.5) * height + 1;
+            const z3d = -3;
+            return { x: x3d, y: y3d, z: z3d };
+        }
+
+        // Função de detecção de mão aberta (simplificada)
+        function isHandOpen(landmarks) {
+            if (!landmarks || landmarks.length !== 21) return false;
+            function estendido(palma, base, ponta) {
+                const distBase = Math.hypot(base.x - palma.x, base.y - palma.y);
+                const distPonta = Math.hypot(ponta.x - palma.x, ponta.y - palma.y);
+                return distPonta > distBase * 1.2;
+            }
+            const palma = landmarks[0];
+            let abertos = 0;
+            for (const [base, tip] of [[5, 8], [9, 12], [13, 16], [17, 20]]) {
+                if (estendido(palma, landmarks[base], landmarks[tip])) abertos++;
+            }
+            return abertos >= 3;
+        }
+
+        // Só mostra botão quando GLB aparecer
+        function showSnapshotButton(show = true) {
+            snapshotBtn.style.display = show ? 'block' : 'none';
+        }
+
+        // Lida com o frame do MediaPipe
+        function onResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                if (isHandOpen(landmarks)) {
+                    const palm = landmarks[0];
+                    const hand3d = screenToSceneCoords(palm.x, palm.y);
+                    handModel.setAttribute('visible', true);
+                    handModel.setAttribute('position', hand3d);
+                    handModel.setAttribute('scale', '0.15 0.15 0.15');
+                    gestureDiv.textContent = "Mão aberta!";
+                    showSnapshotButton(true);
+                } else {
+                    handModel.setAttribute('visible', false);
+                    gestureDiv.textContent = "Mostre a mão aberta!";
+                    showSnapshotButton(false);
+                }
+            } else {
+                handModel.setAttribute('visible', false);
+                gestureDiv.textContent = "Mostre a mão!";
+                showSnapshotButton(false);
+            }
+        }
+
+        // MediaPipe Hands config
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
         });
-        gestureDiv.textContent = "Câmera traseira ativada!";
-        videoElement.srcObject = stream;
-        videoElement.onloadedmetadata = loopAnalyzeFrames;
-        videoElement.play();
-    } catch (e) {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "user" },
-                audio: false
-            });
-            gestureDiv.textContent = "Usando câmera frontal!";
-            videoElement.srcObject = stream;
-            videoElement.onloadedmetadata = loopAnalyzeFrames;
-            videoElement.play();
-        } catch (e2) {
-            gestureDiv.textContent = "Não foi possível acessar nenhuma câmera.";
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 0,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.7
+        });
+        hands.onResults(onResults);
+
+        function loopAnalyzeFrames() {
+            async function onFrame() {
+                if (videoElement.readyState >= 2)
+                    await hands.send({ image: videoElement });
+                requestAnimationFrame(onFrame);
+            }
+            onFrame();
         }
-    }
-}
-function unlockCameraOnMobile() {
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (isMobile) {
-        window.addEventListener('touchend', () => { startPreferredCamera(); }, { once: true });
-        gestureDiv.textContent = "Toque para ativar a câmera!";
-    } else {
-        startPreferredCamera();
-    }
-}
-unlockCameraOnMobile();
 
-// FOTO: Captura da cena A-Frame (GLB + fundo)
-snapshotBtn.addEventListener('click', function() {
-    // Obter canvas do renderer WebGL do A-Frame (TRUQUE: preserveDrawingBuffer já ativado)
-    const canvas = aframeScene.renderer ? aframeScene.renderer.domElement :
-                  aframeScene?.sceneEl?.renderer?.domElement ||
-                  document.querySelector('canvas');
-    if (!canvas) {
-        alert('Não foi possível capturar imagem!');
-        return;
-    }
+        // Abertura de câmera (igual ao original)
+        async function startPreferredCamera() {
+            gestureDiv.textContent = "Abrindo câmera traseira...";
+            let stream;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { exact: "environment" } },
+                    audio: false
+                });
+                gestureDiv.textContent = "Câmera traseira ativada!";
+                videoElement.srcObject = stream;
+                videoElement.onloadedmetadata = loopAnalyzeFrames;
+                videoElement.play();
+            } catch (e) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: "user" },
+                        audio: false
+                    });
+                    gestureDiv.textContent = "Usando câmera frontal!";
+                    videoElement.srcObject = stream;
+                    videoElement.onloadedmetadata = loopAnalyzeFrames;
+                    videoElement.play();
+                } catch (e2) {
+                    gestureDiv.textContent = "Não foi possível acessar nenhuma câmera.";
+                }
+            }
+        }
+        function unlockCameraOnMobile() {
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (isMobile) {
+                window.addEventListener('touchend', () => { startPreferredCamera(); }, { once: true });
+                gestureDiv.textContent = "Toque para ativar a câmera!";
+            } else {
+                startPreferredCamera();
+            }
+        }
+        unlockCameraOnMobile();
 
-    // Cria imagem
-    const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
-    link.download = 'snapshot-ar.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-});
-</script>
+        // FOTO: Captura da cena A-Frame (GLB + fundo)
+        snapshotBtn.addEventListener('click', function () {
+            const rendererCanvas = aframeScene.renderer ? aframeScene.renderer.domElement :
+                aframeScene?.sceneEl?.renderer?.domElement ||
+                document.querySelector('canvas');
+            if (!rendererCanvas) {
+                alert('Não foi possível capturar imagem!');
+                return;
+            }
+            // Use o tamanho do renderer como referência principal
+            const w = rendererCanvas.width;
+            const h = rendererCanvas.height;
+
+            const snapshotCanvas = document.createElement("canvas");
+            snapshotCanvas.width = w;
+            snapshotCanvas.height = h;
+            const ctx = snapshotCanvas.getContext("2d");
+
+            // VIDEO: espelhado horizontalmente no fundo
+            ctx.save();
+            ctx.translate(w, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(videoElement, 0, 0, w, h); // Ocupe o canvas todo!
+            ctx.restore();
+
+            // CENA 3D: Desenhe por cima, no mesmo tamanho
+            ctx.drawImage(rendererCanvas, 0, 0, w, h);
+
+            // Download como PNG
+            const link = document.createElement('a');
+            //link.href = snapshotCanvas.toDataURL('image/png');
+            link.href = aframeScene.components.screenshot.getCanvas('perspective').toDataURL('image/png')
+            link.download = 'snapshot-ar.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+    </script>
 </body>
+
 </html>
