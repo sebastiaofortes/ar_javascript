@@ -228,14 +228,49 @@
 
         // FOTO: Captura da cena A-Frame (GLB + fundo)
         snapshotBtn.addEventListener('click', function () {
-            // Download como PNG
-            const link = document.createElement('a');
-            //link.href = snapshotCanvas.toDataURL('image/png');
-            link.href = aframeScene.components.screenshot.getCanvas('perspective').toDataURL('image/png')
-            link.download = 'snapshot-ar.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Referência para a cena do A-Frame
+            const scene = aframeScene; // ou document.querySelector('a-scene')
+            const video = document.getElementById('bg-video');
+
+            // Garante que o renderer preserve o buffer para snapshot (pode ser setado no HTML também)
+            scene.setAttribute('renderer', 'preserveDrawingBuffer: true;');
+
+            // Salva tamanhos originais do renderer/canvas
+            const canvas = scene.renderer && scene.renderer.domElement;
+            const origWidth = canvas ? canvas.width : null;
+            const origHeight = canvas ? canvas.height : null;
+
+            // Ajusta o tamanho do canvas para a proporção do vídeo (se possível)
+            if (canvas && video.videoWidth && video.videoHeight) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                // Opcional: forçar o resize do renderer (alguns casos exigem)
+                if (scene.renderer) {
+                    scene.renderer.setSize(video.videoWidth, video.videoHeight, false);
+                }
+            }
+
+            // Captura o snapshot usando o componente screenshot do A-Frame
+            scene.components.screenshot.capture('perspective');
+
+            // Aguarda o screenshot ser gerado (pode ser necessário um pequeno timeout)
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = scene.components.screenshot.getCanvas('perspective').toDataURL('image/png');
+                link.download = 'snapshot-ar.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // (Opcional) Restaura o tamanho original do canvas após capturar o snapshot
+                if (canvas && origWidth && origHeight) {
+                    canvas.width = origWidth;
+                    canvas.height = origHeight;
+                    if (scene.renderer) {
+                        scene.renderer.setSize(origWidth, origHeight, false);
+                    }
+                }
+            }, 100); // 100ms normalmente é suficiente para garantir o render
         });
 
     </script>
