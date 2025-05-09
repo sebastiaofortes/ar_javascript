@@ -228,49 +228,44 @@
 
         // FOTO: Captura da cena A-Frame (GLB + fundo)
         snapshotBtn.addEventListener('click', function () {
-            // Referência para a cena do A-Frame
-            const scene = aframeScene; // ou document.querySelector('a-scene')
             const video = document.getElementById('bg-video');
+            const scene = document.querySelector('a-scene');
 
-            // Garante que o renderer preserve o buffer para snapshot (pode ser setado no HTML também)
-            scene.setAttribute('renderer', 'preserveDrawingBuffer: true;');
+            // Criar canvas para capturar o frame do vídeo
+            const videoCanvas = document.createElement('canvas');
+            const videoContext = videoCanvas.getContext('2d');
+            videoCanvas.width = video.videoWidth;
+            videoCanvas.height = video.videoHeight;
+            videoContext.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
 
-            // Salva tamanhos originais do renderer/canvas
-            const canvas = scene.renderer && scene.renderer.domElement;
-            const origWidth = canvas ? canvas.width : null;
-            const origHeight = canvas ? canvas.height : null;
+            // Capturar a cena 3D renderizada
+            const sceneCanvas = scene.components.screenshot.getCanvas('perspective');
 
-            // Ajusta o tamanho do canvas para a proporção do vídeo (se possível)
-            if (canvas && video.videoWidth && video.videoHeight) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                // Opcional: forçar o resize do renderer (alguns casos exigem)
-                if (scene.renderer) {
-                    scene.renderer.setSize(video.videoWidth, video.videoHeight, false);
-                }
-            }
+            // Criar canvas para combinar as imagens
+            const combinedCanvas = document.createElement('canvas');
+            const combinedContext = combinedCanvas.getContext('2d');
+            combinedCanvas.width = videoCanvas.width;
+            combinedCanvas.height = videoCanvas.height;
 
-            // Captura o snapshot usando o componente screenshot do A-Frame
-            scene.components.screenshot.capture('perspective');
+            // Desenhar o frame do vídeo de fundo
+            combinedContext.drawImage(videoCanvas, 0, 0);
 
-            // Aguarda o screenshot ser gerado (pode ser necessário um pequeno timeout)
-            setTimeout(() => {
-                const link = document.createElement('a');
-                link.href = scene.components.screenshot.getCanvas('perspective').toDataURL('image/png');
-                link.download = 'snapshot-ar.png';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+            // Ajustar a posição e tamanho da cena 3D conforme necessário
+            const sceneWidth = sceneCanvas.width;
+            const sceneHeight = sceneCanvas.height;
+            const offsetX = (combinedCanvas.width - sceneWidth) / 2;
+            const offsetY = (combinedCanvas.height - sceneHeight) / 2;
 
-                // (Opcional) Restaura o tamanho original do canvas após capturar o snapshot
-                if (canvas && origWidth && origHeight) {
-                    canvas.width = origWidth;
-                    canvas.height = origHeight;
-                    if (scene.renderer) {
-                        scene.renderer.setSize(origWidth, origHeight, false);
-                    }
-                }
-            }, 100); // 100ms normalmente é suficiente para garantir o render
+            // Desenhar a cena 3D sobre o vídeo de fundo
+            combinedContext.drawImage(sceneCanvas, offsetX, offsetY, sceneWidth, sceneHeight);
+
+            // Criar link para download da imagem combinada
+            const link = document.createElement('a');
+            link.href = combinedCanvas.toDataURL('image/png');
+            link.download = 'snapshot-ar.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
 
     </script>
