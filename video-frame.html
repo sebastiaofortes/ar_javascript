@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <a-assets>
+        <video id="video360" src="vimeo.mp4" crossorigin="anonymous" loop="true" playsinline webkit-playsinline></video>
+      </a-assets>
+      <a-videosphere src="#video360" rotation="0 -90 0"></a-videosphere>
+    </a-scene>
+    <button id="playBtn" style="position: absolute; top: 20px; left: 20px; z-index: 10;">
+      Iniciar Vídeo 360
+    </button>
+    <script>
+      var video = document.querySelector('#video360');
+      var playBtn = document.getElementById('playBtn');
+
+      playBtn.addEventListener('click', function () {
+        video.play();
+        playBtn.style.display = 'none'; // Esconde o botão depois que usuário clicou
+      });
+    </script>
+  </body>
+</html>
