@@ -236,14 +236,19 @@
             // Ajusta o screenshot "na hora" para o tamanho da tela!
             aframeScene.setAttribute('screenshot', `width: ${ww}; height: ${hh}`);
 
-            // Download como PNG
-            const link = document.createElement('a');
-            //link.href = snapshotCanvas.toDataURL('image/png');
-            link.href = aframeScene.components.screenshot.getCanvas('perspective').toDataURL('image/png')
-            link.download = 'snapshot-ar.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            setTimeout(() => {
+                const canvas = aframeScene.components.screenshot.getCanvas('perspective');
+                if (!canvas) {
+                    alert('Não foi possível capturar imagem!');
+                    return;
+                }
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'snapshot-ar.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }, 50);
         });
 
     </script>
