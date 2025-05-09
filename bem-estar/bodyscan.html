@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+    <style>
+      #playBtn {
+        position: absolute;
+        top: 20px; left: 20px; z-index: 10;
+        padding: 15px 30px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        background-color: #2277aa;
+        color: white;
+        cursor: pointer;
+      }
+      #instructions {
+        position: absolute;
+        bottom: 20px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,0.5); color: #fff; padding: 8px 18px;
+        border-radius: 10px; font-size: 1em; z-index: 10;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="playBtn">Iniciar Body Scan</button>
+    <div id="instructions" style="display:none;">
+      Siga a luz e leve sua atenção para cada parte do corpo.<br>Relaxe, observe e aceite cada sensação.
+    </div>
+    <a-scene>
+      <!-- Avatar simplificado em 6 partes -->
+      <a-entity id="avatar" position="0 1 -3">
+        <!-- Cabeça -->
+        <a-sphere radius="0.16" color="#dadada" position="0 0.85 0"></a-sphere>
+        <!-- Tórax -->
+        <a-box depth="0.22" height="0.28" width="0.26" color="#bbc2cc" position="0 0.57 0" ></a-box>
+        <!-- Barriga -->
+        <a-box depth="0.22" height="0.2" width="0.23" color="#bbc2cc" position="0 0.33 0" ></a-box>
+        <!-- Braços -->
+        <a-box depth="0.18" height="0.07" width="0.45" color="#748899" position="0 0.63 0"></a-box>
+        <!-- Coxas -->
+        <a-box depth="0.18" height="0.18" width="0.16" color="#969baf" position="0 0.12 0"></a-box>
+        <!-- Pernas -->
+        <a-box depth="0.15" height="0.3" width="0.08" color="#969baf" position="-0.055 -0.19 0"></a-box>
+        <a-box depth="0.15" height="0.3" width="0.08" color="#969baf" position="0.055 -0.19 0"></a-box>
+        <!-- Luz guia (círculo amarelo, começa acima da cabeça) -->
+        <a-sphere id="scanLight" visible="false" radius="0.13" color="#ffe066" opacity="0.68" position="0 1.09 0"></a-sphere>
+        <!-- Texto na frente -->
+        <a-entity id="scanText" text="value:; align:center; color: #FFE066; width: 3" position="0 1.3 0"></a-entity>
+      </a-entity>
+    </a-scene>
+    <script>
+      var playBtn = document.getElementById('playBtn');
+      var instructions = document.getElementById('instructions');
+      var scanLight = document.getElementById('scanLight');
+      var scanText = document.getElementById('scanText');
+
+      var scanSequence = [
+        {y: 0.85, texto: "Cabeça"},
+        {y: 0.75, texto: "Pescoço"},
+        {y: 0.63, texto: "Ombros e braços"},
+        {y: 0.57, texto: "Tórax e coração"},
+        {y: 0.35, texto: "Barriga"},
+        {y: 0.13, texto: "Quadris e coxas"},
+        {y: -0.09, texto: "Joelhos"},
+        {y: -0.19, texto: "Pernas"},
+        {y: -0.35, texto: "Pés"},
+      ];
+
+      playBtn.addEventListener('click', function () {
+        playBtn.style.display = 'none';
+        scanLight.setAttribute('visible', true);
+        instructions.style.display = 'block';
+        runBodyScan(0);
+      });
+
+      function runBodyScan(step) {
+        if (step >= scanSequence.length) {
+          scanText.setAttribute('text', 'value', 'Aproveite o relaxamento! 😊');
+          scanLight.setAttribute('visible', false);
+          setTimeout(() => { instructions.innerHTML = "Sessão concluída! Volte quando quiser." }, 3500);
+          return;
+        }
+        // Move a luz para a parte do corpo e mostra texto
+        scanLight.setAttribute('position', `0 ${scanSequence[step].y} 0`);
+        scanText.setAttribute('text', 'value', scanSequence[step].texto);
+
+        // Espera alguns segundos, então passa pro próximo passo
+        setTimeout(() => runBodyScan(step + 1), 4000); // 4s por parte
+      }
+    </script>
+  </body>
+</html>
