@@ -228,39 +228,13 @@
 
         // FOTO: Captura da cena A-Frame (GLB + fundo)
         snapshotBtn.addEventListener('click', function () {
-            const rendererCanvas = aframeScene.renderer ? aframeScene.renderer.domElement :
-                aframeScene?.sceneEl?.renderer?.domElement ||
-                document.querySelector('canvas');
-            if (!rendererCanvas) {
-                alert('Não foi possível capturar imagem!');
-                return;
-            }
-            // Use o tamanho do renderer como referência principal
-            const w = rendererCanvas.width;
-            const h = rendererCanvas.height;
 
-            const snapshotCanvas = document.createElement("canvas");
-            snapshotCanvas.width = w;
-            snapshotCanvas.height = h;
-            const ctx = snapshotCanvas.getContext("2d");
-
-            // VIDEO: espelhado horizontalmente no fundo
-            ctx.save();
-            ctx.translate(w, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(videoElement, 0, 0, w, h); // Ocupe o canvas todo!
-            ctx.restore();
-
-            // CENA 3D: Desenhe por cima, no mesmo tamanho
-            ctx.drawImage(rendererCanvas, 0, 0, w, h);
-
-            // Codigo de correção
+            // Obtém o tamanho da tela do dispositivo
             const ww = window.innerWidth;
             const hh = window.innerHeight;
 
             // Ajusta o screenshot "na hora" para o tamanho da tela!
             aframeScene.setAttribute('screenshot', `width: ${ww}; height: ${hh}`);
-            // Codigo de correção
 
             // Download como PNG
             const link = document.createElement('a');
