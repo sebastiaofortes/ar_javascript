@@ -1,0 +1,33 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <!-- Ambiente -->
+      <a-box position="0 0 -5" width="10" height="0.1" depth="10" color="#ccc"></a-box> <!-- chão -->
+      <a-box position="0 2.5 -10" width="10" height="5" depth="0.1" color="#333"></a-box> <!-- parede do fundo -->
+      <a-box position="-5 2.5 -5" width="0.1" height="5" depth="10" color="#444"></a-box> <!-- parede esquerda -->
+      <a-box position="5 2.5 -5" width="0.1" height="5" depth="10" color="#444"></a-box> <!-- parede direita -->
+
+      <!-- Porta trancada -->
+      <a-box id="door" position="0 1.5 -9.95" width="2" height="3" depth="0.1" color="#222"></a-box>
+
+      <!-- Cubos com números -->
+      <a-box id="cube1" position="-2 0.5 -5" color="#4CAF50" text="value: 3; align: center; color: white; width: 4" class="interactable"></a-box>
+      <a-box id="cube2" position="0 0.5 -5" color="#2196F3" text="value: 1; align: center; color: white; width: 4" class="interactable"></a-box>
+      <a-box id="cube3" position="2 0.5 -5" color="#FFC107" text="value: 7; align: center; color: black; width: 4" class="interactable"></a-box>
+
+      <!-- Nota com dica -->
+      <a-plane position="0 0.1 -4" width="2" height="1" rotation="-90 0 0" color="#fff"
+               text="value: A soma dos números te leva à saída.; color: black; width: 3"></a-plane>
+
+      <!-- Painel para entrada de código (simulado por clique) -->
+      <a-box id="panel" position="0 1 -7" width="1.5" height="1" depth="0.1" color="#555"
+             text="value: Inserir Código; align: center; color: white; width: 4"></a-box>
+
+      <!-- Câmera -->
+      <a-entity camera position="0 1.6 0" look-controls wasd-controls></a-entity>
+    </a-scene>
+  </body>
+</html>
