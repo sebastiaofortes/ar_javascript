@@ -33,13 +33,6 @@
       justify-content: flex-start;
     }
 
-    h1 {
-      font-style: italic;
-      color: #009fa0;
-      text-align: center;
-      margin: 16px 0 0 0;
-    }
-
     section {
       flex: 1 1 auto;
       display: flex;
@@ -114,15 +107,6 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.30);
     }
 
-    .blend-shapes {
-      margin: 18px auto;
-      max-width: 450px;
-      color: #f1f3f4;
-      letter-spacing: 0.1em;
-      font-size: 1em;
-      text-align: center;
-    }
-
     @media (max-width: 700px) {
       #liveView {
         min-height: 180px;
@@ -138,17 +122,16 @@
     <div id="liveView">
       <button id="webcamButton" class="mdc-button mdc-button--raised">
         <span class="mdc-button__ripple"></span>
-        <span class="mdc-button__label">ENABLE WEBCAM</span>
+        <span class="mdc-button__label">Iniciar</span>
       </button>
       <video id="webcam" autoplay playsinline></video>
       <canvas class="output_canvas" id="output_canvas"></canvas>
     </div>
-    <div class="blend-shapes">
+
       <div id="smile-timer">
         0.0s
       </div>
-      <ul class="blend-shapes-list" id="video-blend-shapes"></ul>
-    </div>
+
   </section>
 
   <script type="module">
@@ -158,11 +141,16 @@
     const video = document.getElementById("webcam");
     const canvasElement = document.getElementById("output_canvas");
     const canvasCtx = canvasElement.getContext("2d");
-    const infoContainer = document.getElementById("video-blend-shapes");
     let faceLandmarker;
     let runningMode = "IMAGE";
     let enableWebcamButton;
     let webcamRunning = false;
+
+    // Nomes dos botões
+    const BUTTON_START = "Iniciar";
+    const BUTTON_STOP = "Sair";
+    // -- Nomes dos botões
+
 
     // Variaveis do contador de tempo de soriso
     let smileActive = false;
@@ -223,7 +211,7 @@
       if (webcamRunning === true) {
         // Parar
         webcamRunning = false;
-        enableWebcamButton.querySelector('.mdc-button__label').textContent = "ENABLE WEBCAM";
+        enableWebcamButton.querySelector('.mdc-button__label').textContent = BUTTON_START;
         let stream = video.srcObject;
         let tracks = stream ? stream.getTracks() : [];
         tracks.forEach(track => track.stop());
@@ -232,7 +220,7 @@
         return;
       } else {
         webcamRunning = true;
-        enableWebcamButton.querySelector('.mdc-button__label').textContent = "DISABLE WEBCAM";
+        enableWebcamButton.querySelector('.mdc-button__label').textContent = BUTTON_STOP;
       }
       const constraints = { video: true };
       navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
@@ -271,7 +259,7 @@
           drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS, { color: "#30FF30" });
         }
       }
-      drawInfos(infoContainer, results.faceBlendshapes);
+      drawInfos(results.faceBlendshapes);
       // Loop
       if (webcamRunning === true) {
         window.requestAnimationFrame(predictWebcam);
@@ -285,9 +273,8 @@
       }
     }
 
-    function drawInfos(el, blendShapes) {
+    function drawInfos(blendShapes) {
       if (!blendShapes.length) {
-        el.innerHTML = '';
         // Lógica do contador de tempo de soriso
         // Zera contador se o rosto sumiu
         resetSmileTimer();
@@ -315,10 +302,6 @@
         alert('Parabéns! Você sorriu por 15 segundos!');
         resetSmileTimer();
       }
-
-      el.innerHTML = smileDetected
-        ? `<li>SORRISO DETECTADO! 😁</li>`
-        : `<li>Nenhum sorriso detectado.</li>`;
     }
 
     // Funções do contador de tempo de soriso
