@@ -97,6 +97,23 @@
       z-index: 10;
     }
 
+    #smile-timer {
+      position: absolute;
+      top: 62px;
+      /* Deixe espaço para o botão, ajuste conforme necessário */
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.55);
+      color: #fff;
+      font-size: 1.4em;
+      border-radius: 9px;
+      padding: 7px 15px;
+      font-family: monospace;
+      z-index: 20;
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.30);
+    }
+
     .blend-shapes {
       margin: 18px auto;
       max-width: 450px;
@@ -127,17 +144,7 @@
       <canvas class="output_canvas" id="output_canvas"></canvas>
     </div>
     <div class="blend-shapes">
-      <div id="smile-timer" style="
-      right: 14px;
-      top:14px;
-      background:rgba(0,0,0,0.55);
-      color: #fff;
-      font-size: 1.4em;
-      border-radius: 9px;
-      padding: 7px 15px;
-      font-family: monospace;
-      z-index: 20;
-      pointer-events: none;">
+      <div id="smile-timer">
         0.0s
       </div>
       <ul class="blend-shapes-list" id="video-blend-shapes"></ul>
