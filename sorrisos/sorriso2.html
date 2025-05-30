@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Detecção de Sorriso com MediaPipe</title>
+  <style>
+    body {
+      background: #222;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #output_canvas {
+      border: 1px solid #555;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    #status {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: yellow;
+      background: rgba(0, 0, 0, 0.5);
+      font-size: 2em;
+      z-index: 2;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-family: sans-serif;
+    }
+  </style>
+  <!-- MediaPipe e utils -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+</head>
+
+<body>
+  <video id="input_video" width="640" height="480" autoplay muted style="display:none"></video>
+  <canvas id="output_canvas" width="640" height="480"></canvas>
+  <div id="status">Carregando...</div>
+  <script>
+    // Parâmetros
+    const SMILE_THRESHOLD = 1.0; // ajuste conforme necessário
+
+    const LEFT_MOUTH = 61;
+    const RIGHT_MOUTH = 291;
+    const TOP_LOWER_LIP = 0;
+    const BOTTOM_LOWER_LIP = 17;
+    const LEFT_UPPER_LIP = 39;
+    const RIGHT_UPPER_LIP = 269;
+    const LEFT_LOWER_LIP = 181;
+    const RIGHT_LOWER_LIP = 405;
+
+    function euclidean(p1, p2) {
+      return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+    }
+
+    // Nova função de detecção com múltiplos critérios
+    function isSmiling(landmarks) {
+      // Largura da boca
+      const left = landmarks[LEFT_MOUTH];
+      const right = landmarks[RIGHT_MOUTH];
+      const mouthWidth = euclidean(left, right);
+
+      // Altura média do centro e dos lados da boca
+      const topCenter = landmarks[TOP_LOWER_LIP];
+      const bottomCenter = landmarks[BOTTOM_LOWER_LIP];
+      const topLeft = landmarks[LEFT_UPPER_LIP];
+      const bottomLeft = landmarks[LEFT_LOWER_LIP];
+      const topRight = landmarks[RIGHT_UPPER_LIP];
+      const bottomRight = landmarks[RIGHT_LOWER_LIP];
+
+      const centerHeight = euclidean(topCenter, bottomCenter);
+      const leftHeight = euclidean(topLeft, bottomLeft);
+      const rightHeight = euclidean(topRight, bottomRight);
+
+      // Média da altura da boca
+      const avgHeight = (centerHeight + leftHeight + rightHeight) / 3;
+
+      // Proporção largura/altura
+      const smileRatio = mouthWidth / avgHeight;
+
+      // Levantamento dos cantos da boca (quanto mais negativo, mais alto em relação ao centro)
+      const yCenter = (topCenter.y + bottomCenter.y) / 2;
+      const yLeft = (topLeft.y + bottomLeft.y) / 2;
+      const yRight = (topRight.y + bottomRight.y) / 2;
+
+      // Mais negativo = mais alto (0, 0 no topo da tela)
+      const liftLeft = yCenter - yLeft;
+      const liftRight = yCenter - yRight;
+      //console.log(liftLeft, liftRight);
+      // Critério de sorriso aprimorado
+      return (
+        smileRatio > 2.17 &&      // sorriso está "largo"
+        (liftLeft > -1 && liftRight > -1) // cantos estão realmente elevados
+      );
+    }
+
+    const videoElement = document.getElementById('input_video');
+    const canvasElement = document.getElementById('output_canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    const statusDiv = document.getElementById('status');
+
+    const faceMesh = new FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+    });
+
+    faceMesh.setOptions({
+      maxNumFaces: 1,
+      refineLandmarks: true,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+
+    faceMesh.onResults((results) => {
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+      // Desenha vídeo
+      if (results.image) {
+        canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+      }
+
+      if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+        const landmarks = results.multiFaceLandmarks[0];
+
+        // Detecção de sorriso
+        if (isSmiling(landmarks)) {
+          statusDiv.innerText = "😁 Sorrindo!";
+        } else {
+          statusDiv.innerText = "😐 Não sorrindo";
+        }
+
+        // Desenhar pontos do rosto (opcional)
+        canvasCtx.fillStyle = "red";
+        for (let i = 0; i < landmarks.length; i++) {
+          const x = landmarks[i].x * canvasElement.width;
+          const y = landmarks[i].y * canvasElement.height;
+          canvasCtx.beginPath();
+          canvasCtx.arc(x, y, 1, 0, 2 * Math.PI);
+          canvasCtx.fill();
+        }
+      } else {
+        statusDiv.innerText = "Rosto não detectado";
+      }
+      canvasCtx.restore();
+    });
+
+    // Ativa a webcam e conecta ao MediaPipe
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        await faceMesh.send({ image: videoElement });
+      },
+      width: 640,
+      height: 480
+    });
+
+    camera.start();
+
+  </script>
+</body>
+
+</html>
