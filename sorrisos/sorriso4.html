@@ -92,7 +92,8 @@
     #webcamButton {
       position: absolute;
       top: 14px;
-      left: 14px;
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 10;
     }
 
@@ -289,7 +290,7 @@
       const smile1 = blendShapes[0].categories[44];
       const smile2 = blendShapes[0].categories[45];
       let smileDetected = (smile1.score > 0.7 || smile2.score > 0.7);
-      
+
       // Lógica do contador de tempo de soriso
       // Lógica do temporizador:
       if (smileDetected) {
