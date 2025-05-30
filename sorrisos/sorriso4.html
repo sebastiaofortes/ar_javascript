@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="utf-8">
   <meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
-  <title>Face Landmarker - Responsivo</title>
+  <title>Detector de sorrisos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
   <!-- Material Design Button -->
   <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
   <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
   <style>
-    html, body {
+    html,
+    body {
       width: 100%;
       height: 100%;
       margin: 0;
       padding: 0;
     }
+
     body {
       min-height: 100dvh;
       width: 100vw;
@@ -29,12 +32,14 @@
       align-items: stretch;
       justify-content: flex-start;
     }
+
     h1 {
       font-style: italic;
       color: #009fa0;
       text-align: center;
       margin: 16px 0 0 0;
     }
+
     section {
       flex: 1 1 auto;
       display: flex;
@@ -42,6 +47,7 @@
       align-items: stretch;
       min-height: 0;
     }
+
     #liveView {
       flex: 1 1 auto;
       position: relative;
@@ -57,9 +63,13 @@
       align-items: center;
       overflow: hidden;
     }
+
     #webcam {
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       width: 100%;
       height: 100%;
       object-fit: contain;
@@ -67,21 +77,25 @@
       z-index: 1;
       background: #111;
     }
+
     .output_canvas {
       position: absolute;
-      left: 0; top: 0;
+      left: 0;
+      top: 0;
       width: 100%;
       height: 100%;
       z-index: 2;
       pointer-events: none;
       transform: rotateY(180deg);
     }
+
     #webcamButton {
       position: absolute;
       top: 14px;
       left: 14px;
       z-index: 10;
     }
+
     .blend-shapes {
       margin: 18px auto;
       max-width: 450px;
@@ -90,6 +104,7 @@
       font-size: 1em;
       text-align: center;
     }
+
     @media (max-width: 700px) {
       #liveView {
         min-height: 180px;
@@ -99,8 +114,8 @@
     }
   </style>
 </head>
+
 <body>
-  <h1>Face landmark detection using MediaPipe (Responsivo)</h1>
   <section id="demos" class="invisible">
     <div id="liveView">
       <button id="webcamButton" class="mdc-button mdc-button--raised">
@@ -111,6 +126,19 @@
       <canvas class="output_canvas" id="output_canvas"></canvas>
     </div>
     <div class="blend-shapes">
+      <div id="smile-timer" style="
+      right: 14px;
+      top:14px;
+      background:rgba(0,0,0,0.55);
+      color: #fff;
+      font-size: 1.4em;
+      border-radius: 9px;
+      padding: 7px 15px;
+      font-family: monospace;
+      z-index: 20;
+      pointer-events: none;">
+        0.0s
+      </div>
       <ul class="blend-shapes-list" id="video-blend-shapes"></ul>
     </div>
   </section>
@@ -122,11 +150,19 @@
     const video = document.getElementById("webcam");
     const canvasElement = document.getElementById("output_canvas");
     const canvasCtx = canvasElement.getContext("2d");
-    const videoBlendShapes = document.getElementById("video-blend-shapes");
+    const infoContainer = document.getElementById("video-blend-shapes");
     let faceLandmarker;
     let runningMode = "IMAGE";
     let enableWebcamButton;
     let webcamRunning = false;
+
+    // Variaveis do contador de tempo de soriso
+    let smileActive = false;
+    let smileStartTime = null;
+    let smileDuration = 0;
+    const smileTimer = document.getElementById("smile-timer");
+    const SMILE_GOAL_SECONDS = 15; // 3 minutos = 180 segundos
+    // -- Variaveis do contador de tempo de soriso
 
     // Responsivo: redimensiona vídeo/canvas para ocupar o espaço do #liveView
     function resizeToContainer() {
@@ -227,22 +263,81 @@
           drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS, { color: "#30FF30" });
         }
       }
-      drawBlendShapes(videoBlendShapes, results.faceBlendshapes);
+      drawInfos(infoContainer, results.faceBlendshapes);
       // Loop
       if (webcamRunning === true) {
         window.requestAnimationFrame(predictWebcam);
       }
+
+      // Lógica do contador de tempo de soriso
+      // Garante que o tempo seja exibido com precisão em tempo real enquanto a pessoa está sorrindo
+      if (smileActive && smileStartTime) {
+        smileDuration = (performance.now() - smileStartTime) / 1000;
+        updateSmileTimer(smileDuration);
+      }
     }
 
-    function drawBlendShapes(el, blendShapes) {
-      if (!blendShapes.length) { el.innerHTML = ''; return; }
-      const smile1 = blendShapes[0].categories[44]; // mouthSmileLeft
-      const smile2 = blendShapes[0].categories[45]; // mouthSmileRight
+    function drawInfos(el, blendShapes) {
+      if (!blendShapes.length) {
+        el.innerHTML = '';
+        // Lógica do contador de tempo de soriso
+        // Zera contador se o rosto sumiu
+        resetSmileTimer();
+        updateLabel(0);
+        return;
+      }
+      const smile1 = blendShapes[0].categories[44];
+      const smile2 = blendShapes[0].categories[45];
       let smileDetected = (smile1.score > 0.7 || smile2.score > 0.7);
-      el.innerHTML = smileDetected ?
-        `<li>SORRISO DETECTADO! 😁</li>` :
-        `<li>Nenhum sorriso detectado.</li>`;
+      
+      // Lógica do contador de tempo de soriso
+      // Lógica do temporizador:
+      if (smileDetected) {
+        if (!smileActive) {
+          startSmileTimer();
+        } else {
+          updateSmileTimer();
+        }
+      } else {
+        resetSmileTimer();
+      }
+      updateLabel(smileDuration);
+
+      if (smileActive && smileDuration >= SMILE_GOAL_SECONDS) {
+        alert('Parabéns! Você sorriu por 15 segundos!');
+        resetSmileTimer();
+      }
+
+      el.innerHTML = smileDetected
+        ? `<li>SORRISO DETECTADO! 😁</li>`
+        : `<li>Nenhum sorriso detectado.</li>`;
     }
+
+    // Funções do contador de tempo de soriso
+
+    function updateLabel(seconds) {
+      smileTimer.textContent = `${seconds.toFixed(1)}s`;
+    }
+
+    function startSmileTimer() {
+      smileActive = true;
+      smileStartTime = performance.now();
+      smileDuration = 0;
+    }
+
+    function updateSmileTimer() {
+      smileDuration = (performance.now() - smileStartTime) / 1000;
+    }
+
+    function resetSmileTimer() {
+      smileActive = false;
+      smileStartTime = null;
+      smileDuration = 0;
+    }
+
+    // -- Funções do contador de tempo de soriso
+
   </script>
 </body>
+
 </html>
