@@ -156,6 +156,14 @@
       box-shadow: none;
     }
 
+    /* Animação de redução de largura */
+    #smile-progress.shrink-on-complete {
+      transition: width 1s cubic-bezier(0.55, 0, 0.1, 1);
+      width: 20px !important;
+      min-width: 20px !important;
+      /* Você pode ajustar 1s para acelerar ou desacelerar */
+    }
+
     #smile-progress-text {
       position: absolute;
       bottom: 16px;
@@ -231,6 +239,7 @@
     let smileDuration = 0;
     const smileTimer = document.getElementById("smile-timer");
     const SMILE_GOAL_SECONDS = 15; // 3 minutos = 180 segundos
+    let incompleteSmiletime = true;
     // -- Variaveis do contador de tempo de soriso
 
     const PROGRESS_MAX = SMILE_GOAL_SECONDS; //15
@@ -374,9 +383,20 @@
       }
       updateLabel(smileDuration);
 
-      if (smileActive && smileDuration >= SMILE_GOAL_SECONDS) {
-        alert('Parabéns! Você sorriu por 15 segundos!');
-        resetSmileTimer();
+      if (incompleteSmiletime && smileActive && smileDuration >= SMILE_GOAL_SECONDS) {
+        incompleteSmiletime = false;
+        console.log('Parabéns! Você sorriu por 15 segundos!');
+        // 1. Anima a barra para encolher
+        const progress = document.getElementById('smile-progress');
+        progress.classList.add('shrink-on-complete');
+        setTimeout(() => {
+          // 2. Limpa/reset depois (tempo igual ao transition)
+          progress.classList.remove('shrink-on-complete');
+          resetSmileTimer();
+          incompleteSmiletime = true;
+        }, 1000); // 1 segundos, levemente maior que o transition de 1s
+
+        return; // evita que execute resetSmileTimer imediatamente
       }
     }
 
