@@ -107,6 +107,7 @@
     }
 
     #smile-progress {
+      display: none;
       width: 80%;
       height: 18px;
       position: absolute;
@@ -141,7 +142,7 @@
     }
 
     #smile-progress {
-      background-color: rgba(255, 255, 255, 0.3);
+      background-color: rgba(255, 255, 255, 0.1);
     }
 
     /* Edge, IE */
@@ -341,6 +342,7 @@
       if (smileDetected) {
         if (!smileActive) {
           startSmileTimer();
+          showProgressBar();
         } else {
           updateSmileTimer();
         }
@@ -359,7 +361,7 @@
 
     function updateLabel(seconds) {
       smileTimer.textContent = `${seconds.toFixed(1)}s`;
-      updateSmileProgress(seconds);
+      updateProgressBar(seconds);
     }
 
     function startSmileTimer() {
@@ -376,16 +378,26 @@
       smileActive = false;
       smileStartTime = null;
       smileDuration = 0;
+      hideProgressBar();
     }
 
     // -- Funções do contador de tempo de soriso
 
-    function updateSmileProgress(seconds) {
+    function updateProgressBar(seconds) {
       const progress = document.getElementById('smile-progress');
       if (progress) {
         progress.value = Math.min(seconds, PROGRESS_MAX);
       }
     }
+
+    function hideProgressBar() {
+      document.getElementById('smile-progress').style.display = 'none';
+    }
+
+    function showProgressBar() {
+      document.getElementById('smile-progress').style.display = 'block';
+    }
+
 
   </script>
 </body>
