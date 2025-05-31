@@ -234,7 +234,7 @@
       <canvas class="output_canvas" id="output_canvas"></canvas>
     </div>
 
-    <div id="info-start">Sorria</div>
+    <div id="info-start"></div>
     <div id="info-container" style="display: none;">
       <div id="smile-timer">
         0.0s
@@ -325,6 +325,7 @@
         // Parar
         webcamRunning = false;
         enableWebcamButton.querySelector('.mdc-button__label').textContent = BUTTON_START;
+        document.getElementById('info-start').textContent = '';
         let stream = video.srcObject;
         let tracks = stream ? stream.getTracks() : [];
         tracks.forEach(track => track.stop());
@@ -334,6 +335,7 @@
       } else {
         webcamRunning = true;
         enableWebcamButton.querySelector('.mdc-button__label').textContent = BUTTON_STOP;
+        document.getElementById('info-start').textContent = 'Sorria!';
       }
       const constraints = { video: true };
       navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
