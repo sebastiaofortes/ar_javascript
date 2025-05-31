@@ -156,6 +156,28 @@
       box-shadow: none;
     }
 
+    #smile-progress-text {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #222;
+      /* Cor do texto, combine com o fundo da barra para contraste */
+      font-size: 1em;
+      font-weight: bold;
+      pointer-events: none;
+      z-index: 30;
+      /* acima do progress */
+      user-select: none;
+      text-shadow: 0 1px 6px rgba(255, 255, 255, 0.6);
+      /* opcional para melhor contraste */
+    }
+
     @media (max-width: 700px) {
       #liveView {
         min-height: 180px;
@@ -181,6 +203,7 @@
         0.0s
       </div>
       <progress id="smile-progress" value="0" max="15"></progress>
+      <div id="smile-progress-text">Felicidade</div>
     </div>
   </section>
 
@@ -342,7 +365,7 @@
       if (smileDetected) {
         if (!smileActive) {
           startSmileTimer();
-          showProgressBar();
+          showContainerInfo();
         } else {
           updateSmileTimer();
         }
@@ -378,7 +401,7 @@
       smileActive = false;
       smileStartTime = null;
       smileDuration = 0;
-      hideProgressBar();
+      hideContaiinerInfo();
     }
 
     // -- Funções do contador de tempo de soriso
@@ -390,11 +413,11 @@
       }
     }
 
-    function hideProgressBar() {
+    function hideContaiinerInfo() {
       document.getElementById('info-container').style.display = 'none';
     }
 
-    function showProgressBar() {
+    function showContainerInfo() {
       document.getElementById('info-container').style.display = 'block';
     }
 
