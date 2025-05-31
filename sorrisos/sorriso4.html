@@ -89,6 +89,17 @@
       z-index: 10;
     }
 
+    #info-start {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: 2.5em;
+      font-family: monospace;
+      z-index: 20;
+    }
+
     #smile-timer {
       position: absolute;
       bottom: 62px;
@@ -223,6 +234,7 @@
       <canvas class="output_canvas" id="output_canvas"></canvas>
     </div>
 
+    <div id="info-start">Sorria</div>
     <div id="info-container" style="display: none;">
       <div id="smile-timer">
         0.0s
@@ -456,10 +468,12 @@
 
     function hideContaiinerInfo() {
       document.getElementById('info-container').style.display = 'none';
+      document.getElementById('info-start').style.display = 'block';
     }
 
     function showContainerInfo() {
       document.getElementById('info-container').style.display = 'block';
+      document.getElementById('info-start').style.display = 'none';
     }
 
 
