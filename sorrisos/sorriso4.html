@@ -106,6 +106,19 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.30);
     }
 
+    #smile-progress {
+      width:80%;
+      height:18px;
+      position:absolute;
+      bottom:16px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:25; 
+      background:#222; 
+      border-radius:8px; 
+      overflow:hidden
+    }
+
     @media (max-width: 700px) {
       #liveView {
         min-height: 180px;
@@ -129,8 +142,7 @@
     <div id="smile-timer">
       0.0s
     </div>
-    <progress id="smile-progress" value="0" max="15"
-      style="width:80%;height:18px;position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:25; background:#222; border-radius:8px; overflow:hidden"></progress>
+    <progress id="smile-progress" value="0" max="15"></progress>
 
   </section>
 
