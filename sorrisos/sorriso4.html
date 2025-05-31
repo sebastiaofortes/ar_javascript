@@ -126,9 +126,11 @@
       <canvas class="output_canvas" id="output_canvas"></canvas>
     </div>
 
-      <div id="smile-timer">
-        0.0s
-      </div>
+    <div id="smile-timer">
+      0.0s
+    </div>
+    <progress id="smile-progress" value="0" max="15"
+      style="width:80%;height:18px;position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:25; background:#222; border-radius:8px; overflow:hidden"></progress>
 
   </section>
 
@@ -157,6 +159,8 @@
     const smileTimer = document.getElementById("smile-timer");
     const SMILE_GOAL_SECONDS = 15; // 3 minutos = 180 segundos
     // -- Variaveis do contador de tempo de soriso
+
+    const PROGRESS_MAX = SMILE_GOAL_SECONDS; //15
 
     // Responsivo: redimensiona vídeo/canvas para ocupar o espaço do #liveView
     function resizeToContainer() {
@@ -306,6 +310,7 @@
 
     function updateLabel(seconds) {
       smileTimer.textContent = `${seconds.toFixed(1)}s`;
+      updateSmileProgress(seconds);
     }
 
     function startSmileTimer() {
@@ -325,6 +330,13 @@
     }
 
     // -- Funções do contador de tempo de soriso
+
+    function updateSmileProgress(seconds) {
+      const progress = document.getElementById('smile-progress');
+      if (progress) {
+        progress.value = Math.min(seconds, PROGRESS_MAX);
+      }
+    }
 
   </script>
 </body>
