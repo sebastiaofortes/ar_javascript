@@ -164,6 +164,28 @@
       /* Você pode ajustar 1s para acelerar ou desacelerar */
     }
 
+    /* Animação para a barra crescer até o tamanho total da tela */
+    #smile-progress.grow-fullscreen {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 200vw !important;
+      height: 100vh !important;
+      max-width: none;
+      max-height: none;
+      z-index: 10000;
+      background: #fff;
+      transition: all 0.8s cubic-bezier(0.55, 0, 0.1, 1);
+      /* opcional, remove borda */
+      border-radius: 0 !important;
+    }
+
+    #smile-progress.grow-fullscreen::-webkit-progress-bar,
+    #smile-progress.grow-fullscreen::-webkit-progress-value,
+    #smile-progress.grow-fullscreen::-moz-progress-bar {
+      background-color: #fff !important;
+    }
+
     #smile-progress-text {
       position: absolute;
       bottom: 16px;
@@ -390,10 +412,14 @@
         const progress = document.getElementById('smile-progress');
         progress.classList.add('shrink-on-complete');
         setTimeout(() => {
-          // 2. Limpa/reset depois (tempo igual ao transition)
-          progress.classList.remove('shrink-on-complete');
-          resetSmileTimer();
-          incompleteSmiletime = true;
+          progress.classList.add('grow-fullscreen');
+          setTimeout(() => {
+            // 2. Limpa/reset depois (tempo igual ao transition)
+            progress.classList.remove('shrink-on-complete');
+            progress.classList.remove('grow-fullscreen');
+            resetSmileTimer();
+            incompleteSmiletime = true;
+          }, 900); // 0.9 segundos, levemente maior que o transition de 0.8s
         }, 1000); // 1 segundos, levemente maior que o transition de 1s
 
         return; // evita que execute resetSmileTimer imediatamente
