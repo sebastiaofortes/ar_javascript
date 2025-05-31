@@ -107,7 +107,6 @@
     }
 
     #smile-progress {
-      display: none;
       width: 80%;
       height: 18px;
       position: absolute;
@@ -177,11 +176,12 @@
       <canvas class="output_canvas" id="output_canvas"></canvas>
     </div>
 
-    <div id="smile-timer">
-      0.0s
+    <div id="info-container" style="display: none;">
+      <div id="smile-timer">
+        0.0s
+      </div>
+      <progress id="smile-progress" value="0" max="15"></progress>
     </div>
-    <progress id="smile-progress" value="0" max="15"></progress>
-
   </section>
 
   <script type="module">
@@ -391,11 +391,11 @@
     }
 
     function hideProgressBar() {
-      document.getElementById('smile-progress').style.display = 'none';
+      document.getElementById('info-container').style.display = 'none';
     }
 
     function showProgressBar() {
-      document.getElementById('smile-progress').style.display = 'block';
+      document.getElementById('info-container').style.display = 'block';
     }
 
 
