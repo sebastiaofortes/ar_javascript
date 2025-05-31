@@ -244,6 +244,22 @@
     </div>
   </section>
 
+  <div id="fullscreenModal" style="
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: white;
+  color: black;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+">
+    <h1>Você completou todas as interações!</h1>
+    <button id="close-modal-btn" class="mdc-button mdc-button--raised" >Fechar</button>
+  </div>
+
   <script type="module">
     import vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
     const { FaceLandmarker, FilesetResolver, DrawingUtils } = vision;
@@ -423,6 +439,7 @@
         setTimeout(() => {
           progress.classList.add('grow-fullscreen');
           setTimeout(() => {
+            abrirModal();
             // 2. Limpa/reset depois (tempo igual ao transition)
             progress.classList.remove('shrink-on-complete');
             progress.classList.remove('grow-fullscreen');
@@ -436,11 +453,6 @@
     }
 
     // Funções do contador de tempo de soriso
-
-    function updateLabel(seconds) {
-      smileTimer.textContent = `${seconds.toFixed(1)}s`;
-      updateProgressBar(seconds);
-    }
 
     function startSmileTimer() {
       smileActive = true;
@@ -461,6 +473,13 @@
 
     // -- Funções do contador de tempo de soriso
 
+    // Função para atualizar elimentos visuais
+
+    function updateLabel(seconds) {
+      smileTimer.textContent = `${seconds.toFixed(1)}s`;
+      updateProgressBar(seconds);
+    }
+
     function updateProgressBar(seconds) {
       const progress = document.getElementById('smile-progress');
       if (progress) {
@@ -478,6 +497,22 @@
       document.getElementById('info-start').style.display = 'none';
     }
 
+    // -- Função para atualizar elimentos visuais
+
+    // Modal de confirmação
+    function abrirModal() {
+      const modal = document.getElementById("fullscreenModal");
+      modal.style.display = "flex";
+    }
+
+    function fecharModal() {
+      const modal = document.getElementById("fullscreenModal");
+      modal.style.display = "none";
+    }
+
+    document.querySelector("#close-modal-btn").addEventListener("click", fecharModal);
+
+    // -- Modal de confirmação
 
   </script>
 </body>
