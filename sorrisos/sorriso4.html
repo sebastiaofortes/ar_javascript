@@ -107,16 +107,53 @@
     }
 
     #smile-progress {
-      width:80%;
-      height:18px;
-      position:absolute;
-      bottom:16px;
-      left:50%;
-      transform:translateX(-50%);
-      z-index:25; 
-      background:#222; 
-      border-radius:8px; 
-      overflow:hidden
+      width: 80%;
+      height: 18px;
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 25;
+      background: rgba(255, 255, 255, 0.3);
+      /* fallback */
+      border-radius: 8px;
+      overflow: hidden;
+      appearance: none;
+    }
+
+    /* Chrome, Safari, Opera (Webkit) */
+    #smile-progress::-webkit-progress-bar {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    #smile-progress::-webkit-progress-value {
+      background-color: #fff;
+    }
+
+    /* Firefox */
+    #smile-progress::-moz-progress-bar {
+      background-color: #fff;
+    }
+
+    #smile-progress::-moz-progress-bar,
+    #smile-progress::-moz-progress-bar {
+      background-color: #fff;
+    }
+
+    #smile-progress {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Edge, IE */
+    #smile-progress::-ms-fill {
+      background-color: #fff;
+      border-radius: 8px;
+    }
+
+    /* Opcional: remove a borda azul padrão no Chrome */
+    #smile-progress:focus {
+      outline: none;
+      box-shadow: none;
     }
 
     @media (max-width: 700px) {
